@@ -1,5 +1,6 @@
 import sys
 from PIL import Image
+import math
 
 # ==============================
 # FUNCTION DEFINITIONS
@@ -135,6 +136,9 @@ def enlarge_image(pixels, width, height, factor):
 
     return new_pixels, new_width, new_height
 
+
+
+
 # ==============================
 # ARGUMENT PARSING AND HELP
 # ==============================
@@ -151,11 +155,12 @@ def parse_arguments(arguments):
             args_dict[key] = None
     return args_dict
 
+
+
 def print_help():
-    """Prints available commands and their usage."""
     help_text = """
     Image Processor - Available Commands:
-    
+
     Usage: python3 main.py <input_image> <output_image> [--command=value ...]
 
     Commands:
@@ -169,11 +174,12 @@ def print_help():
       --dflip                 Flip the image along the diagonal (transpose)
       --shrink=value          Shrink the image by the given factor (e.g., 2 to halve the size)
       --enlarge=value         Enlarge the image by the given factor (e.g., 2 to double the size)
-    
+
+ 
+
     Example Usage:
       python3 main.py input.bmp output.bmp --brightness=50 --contrast=1.5
-      python3 main.py input.bmp output.bmp --hflip --shrink=2
-      python3 main.py input.bmp output.bmp --brightness=50 --contrast=1.2 --negative --vflip
+      python3 main.py input.bmp output.bmp --alpha=2 --gmean
     """
     print(help_text)
 
@@ -233,6 +239,8 @@ if 'enlarge' in args_dict:
     enlarge_factor = int(args_dict['enlarge'])
     pixels, new_width, new_height = enlarge_image(pixels, size[0], size[1], enlarge_factor)
     size = (new_width, new_height)
+
+
 
 
 # Save the modified image
