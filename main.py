@@ -50,7 +50,7 @@ def apply_negative(arr):
 # ==============================
 
 if len(sys.argv) < 4:
-    print("Usage: python3 image_processor.py <image> <output_image> --command [argument=value]")
+    print("Usage: python3 image_processor.py <image> <output_image> --command <value>")
     sys.exit()
 
 # Input arguments
@@ -66,14 +66,14 @@ if command == '--brightness':
     if len(sys.argv) < 5:
         print("Error: Missing brightness factor argument")
         sys.exit()
-    brightness_factor = int(sys.argv[4].split('=')[1])
+    brightness_factor = int(sys.argv[4])  # No need for split, directly next argument
     image_data = adjust_brightness(image_data, brightness_factor)
 
 elif command == '--contrast':
     if len(sys.argv) < 5:
         print("Error: Missing contrast factor argument")
         sys.exit()
-    contrast_factor = float(sys.argv[4].split('=')[1])
+    contrast_factor = float(sys.argv[4])  # No need for split, directly next argument
     image_data = adjust_contrast(image_data, contrast_factor)
 
 elif command == '--negative':
