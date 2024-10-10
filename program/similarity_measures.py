@@ -1,14 +1,15 @@
-# def mean_square_error(original, modified):
-#     """Calculates the Mean Square Error between two images."""
-#     error_sum = sum((o - m) ** 2 for o, m in zip(original, modified))
-#     mse = error_sum / len(original)
-#     return mse
+def calculate_mse(original_pixels, filtered_pixels):
+    """Calculate Mean Square Error (MSE) between original and filtered image."""
+    n = len(original_pixels)
+    mse = sum((o - f) ** 2 for o, f in zip(original_pixels, filtered_pixels)) / n
+    return mse
 
-# def peak_mean_square_error(original, modified):
-#     """Calculates the Peak Mean Square Error between two images."""
-#     mse = mean_square_error(original, modified)
-#     pmse = mse / (255 ** 2)  # Assuming pixel values are in the range [0, 255]
-#     return pmse
+def calculate_pmse(original_pixels, filtered_pixels):
+    """Calculate Peak Mean Square Error (PMSE) between original and filtered image."""
+    max_pixel_value = 255
+    n = len(original_pixels)
+    pmse = sum((o - f) ** 2 for o, f in zip(original_pixels, filtered_pixels)) / (n * max_pixel_value ** 2)
+    return pmse
 
 # def signal_to_noise_ratio(original, modified):
 #     """Calculates the Signal to Noise Ratio."""

@@ -4,6 +4,8 @@ from geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_imag
 from file_operations import load_image, save_image
 from help import print_help
 from noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
+from similarity_measures import calculate_mse, calculate_pmse
+
 
 # ==============================
 # ARGUMENT PARSING AND HELP
@@ -41,7 +43,8 @@ output_image_path = sys.argv[2]
 commands = sys.argv[3:]
 
 # Load the image
-pixels, mode, size, im = load_image(input_image_path)
+original_pixels, mode, size, im = load_image(input_image_path)  # Load original pixels
+pixels = original_pixels.copy()  # Create a copy for processing
 
 # Dictionary to store command-line argument values (e.g., brightness, contrast)
 args_dict = parse_arguments(commands)
@@ -88,7 +91,13 @@ if 'gmean' in args_dict:
     kernel_size = 3  # Fixed kernel size for now, can be adjustable
     pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
 
+if 'mse' in args_dict:
+    mse_value = calculate_mse(original_pixels, pixels)
+    print(f'Mean Square Error (MSE): {mse_value}')
 
+if 'pmse' in args_dict:
+    pmse_value = calculate_pmse(original_pixels, pixels)
+    print(f'Peak Mean Square Error (PMSE): {pmse_value}')
 
 
 # Save the modified image
