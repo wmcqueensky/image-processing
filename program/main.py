@@ -4,22 +4,7 @@ from geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_imag
 from file_operations import load_image, save_image
 from help import print_help
 from noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
-
-# ==============================
-# ARGUMENT PARSING AND HELP
-# ==============================
-
-def parse_arguments(arguments):
-    """Parses the command-line arguments in the form of --argument=value."""
-    args_dict = {}
-    for arg in arguments:
-        if '=' in arg and arg.startswith('--'):
-            key, value = arg.lstrip('-').split('=', 1)
-            args_dict[key] = value
-        elif arg.startswith('--'):
-            key = arg.lstrip('-')
-            args_dict[key] = None
-    return args_dict
+from parse_arguments import parse_arguments  # Importing the parse_arguments function
 
 # ==============================
 # MAIN SCRIPT
@@ -46,7 +31,7 @@ pixels, mode, size, im = load_image(input_image_path)
 # Dictionary to store command-line argument values (e.g., brightness, contrast)
 args_dict = parse_arguments(commands)
 
-# Apply the operations based on input
+# Apply the elementary operations
 if 'brightness' in args_dict:
     brightness_factor = int(args_dict['brightness'])  # Get the brightness factor
     pixels = adjust_brightness(pixels, brightness_factor)
@@ -78,7 +63,6 @@ if 'enlarge' in args_dict:
     pixels, new_width, new_height = enlarge_image(pixels, size[0], size[1], enlarge_factor)
     size = (new_width, new_height)
 
-
 if 'alpha' in args_dict:
     alpha_value = int(args_dict['alpha'])
     kernel_size = 3  # You can adjust or add a custom kernel size argument if desired
@@ -87,9 +71,6 @@ if 'alpha' in args_dict:
 if 'gmean' in args_dict:
     kernel_size = 3  # Fixed kernel size for now, can be adjustable
     pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
-
-
-
 
 # Save the modified image
 save_image(pixels, mode, size, output_image_path)
