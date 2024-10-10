@@ -17,6 +17,11 @@ def print_help():
       --shrink=value          Shrink the image by the given factor (e.g., 2 to halve the size)
       --enlarge=value         Enlarge the image by the given factor (e.g., 2 to double the size)
     
+    Noise removal methods:
+     --alpha Alpha-trimmed mean filter
+     --gmean geometric mean filter 
+     
+     
     Example Usage:
       python3 main.py input.bmp output.bmp --brightness=50 --contrast=1.5
       python3 main.py input.bmp output.bmp --hflip --shrink=2
