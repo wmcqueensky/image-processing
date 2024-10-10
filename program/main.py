@@ -1,11 +1,14 @@
 import sys
-from elementary import adjust_brightness, adjust_contrast, apply_negative
-from geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
-from file_operations import load_image, save_image
-from help import print_help
-from noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
-from parse_arguments import parse_arguments  # Importing the parse_arguments function
-from similarity_measures import mean_square_error, peak_mean_square_error
+
+from functions.elementary import adjust_brightness, adjust_contrast, apply_negative
+from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
+from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
+from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio, peak_signal_to_noise_ratio, maximum_difference
+
+from utils.file_operations import load_image, save_image
+from utils.help import print_help
+from utils.parse_arguments import parse_arguments  
+
 # ==============================
 # MAIN SCRIPT
 # ==============================
@@ -80,6 +83,18 @@ if 'mse' in args_dict:
 if 'pmse' in args_dict:
     pmse_value = peak_mean_square_error(original_pixels, pixels)
     print(f'Peak Mean Square Error (PMSE): {pmse_value}')
+    
+if 'snr' in args_dict:
+    snr_value = signal_to_noise_ratio(original_pixels, pixels)
+    print(f'Signal to Noise Ratio (SNR): {snr_value}')
+
+if 'psnr' in args_dict:
+    psnr_value = peak_signal_to_noise_ratio(original_pixels, pixels)
+    print(f'Peak Signal to Noise Ratio (PSNR): {psnr_value}')
+
+if 'md' in args_dict:
+    md_value = maximum_difference(original_pixels, pixels)
+    print(f'Maximum Difference (MD): {md_value}')
 
 # Save the modified image
 save_image(pixels, mode, size, output_image_path)

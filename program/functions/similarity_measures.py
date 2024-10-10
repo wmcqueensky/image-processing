@@ -20,7 +20,10 @@ def peak_mean_square_error(original_pixels, filtered_pixels):
 def signal_to_noise_ratio(original, modified):
     """Calculates the Signal to Noise Ratio."""
     mse = mean_square_error(original, modified)
-    signal_power = sum(o ** 2 for o in original) / len(original)
+    
+    # Calculate signal power
+    signal_power = sum(sum(o_channel ** 2 for o_channel in o) for o in original) / (len(original) * 3)  # Average for R, G, B
+    
     if mse == 0:
         return float('inf')  # SNR is infinite if there is no error
     snr = 10 * (signal_power / mse) ** 0.5
@@ -36,5 +39,9 @@ def peak_signal_to_noise_ratio(original, modified):
 
 def maximum_difference(original, modified):
     """Calculates the Maximum Difference between two images."""
-    max_diff = max(abs(o - m) for o, m in zip(original, modified))
+    max_diff = max(
+        max(abs(o_channel - m_channel) for o_channel, m_channel in zip(o, m))  # Compute max difference per pixel
+        for o, m in zip(original, modified)  # Loop through each pixel
+    )
     return max_diff
+
