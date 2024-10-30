@@ -46,9 +46,13 @@ def peak_signal_to_noise_ratio(original, modified):
 
 def maximum_difference(original, modified):
     """Calculates the Maximum Difference between two images."""
+    if len(original) != len(modified):
+        raise ValueError("Original and modified images must have the same size.")
+
     max_diff = max(
         max(abs(o_channel - m_channel) for o_channel, m_channel in zip(o, m))  # Compute max difference per pixel
         for o, m in zip(original, modified)  # Loop through each pixel
     )
+    
     return max_diff
 
