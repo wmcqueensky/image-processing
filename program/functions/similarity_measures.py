@@ -33,12 +33,16 @@ def signal_to_noise_ratio(original, modified):
     return snr
 
 def peak_signal_to_noise_ratio(original, modified):
-    """Calculates the Peak Signal to Noise Ratio."""
+    """Calculates the Peak Signal to Noise Ratio for 24-bit images."""
     mse = mean_square_error(original, modified)
+    
     if mse == 0:
         return float('inf')  # PSNR is infinite if there is no error
-    psnr = 10 * (255 ** 2 / mse)
+    
+    max_pixel_value = 255  # Maximum value for each channel in 8-bit images
+    psnr = 10 * math.log10((max_pixel_value ** 2) / mse)  # PSNR formula
     return psnr
+
 
 def maximum_difference(original, modified):
     """Calculates the Maximum Difference between two images."""
