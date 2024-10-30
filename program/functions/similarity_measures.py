@@ -1,3 +1,5 @@
+import math
+
 def mean_square_error(original_pixels, filtered_pixels):
     """Calculate Mean Square Error (MSE) between original and filtered images."""
     n = len(original_pixels)
@@ -26,7 +28,8 @@ def signal_to_noise_ratio(original, modified):
     
     if mse == 0:
         return float('inf')  # SNR is infinite if there is no error
-    snr = 10 * (signal_power / mse) ** 0.5
+    
+    snr = 10 * math.log10(signal_power / mse)  # Correctly compute SNR
     return snr
 
 def peak_signal_to_noise_ratio(original, modified):
