@@ -1,10 +1,10 @@
 def mean_square_error(original_pixels, filtered_pixels):
-    """Calculate Mean Square Error (MSE) between original and filtered image."""
+    """Calculate Mean Square Error (MSE) between original and filtered images."""
     n = len(original_pixels)
     mse = sum(
-        sum((o_channel - f_channel) ** 2 for o_channel, f_channel in zip(o, f))  # Sum across channels
+        (o - f) ** 2 if isinstance(o, int) else sum((oc - fc) ** 2 for oc, fc in zip(o, f)) / 3
         for o, f in zip(original_pixels, filtered_pixels)
-    ) / (n * 3)  # Divide by 3 for R, G, B channels
+    ) / n
     return mse
 
 def peak_mean_square_error(original_pixels, filtered_pixels):
