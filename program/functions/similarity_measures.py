@@ -61,27 +61,23 @@ def peak_signal_to_noise_ratio(original, modified, width, height):
     psnr = 10 * (255 ** 2 / mse)
     return psnr
 
-def maximum_difference(original_pixels, filtered_pixels, width, height):
-    """Calculate Maximum Difference (MD) between original and filtered image."""
 
+def maximum_difference(original_pixels, filtered_pixels):
+    """Calculate Maximum Difference (MD) between original and filtered image."""
 
     max_diff = 0.0  # Initialize maximum difference
 
-    # Loop through each pixel by coordinates
-    for y in range(height):
-        for x in range(width):
-            # Access the pixels directly
-            orig_pixel = original_pixels[y][x]
-            comp_pixel = filtered_pixels[y][x]
+    # Loop directly over each pixel in the 1D array
+    for orig_pixel, comp_pixel in zip(original_pixels, filtered_pixels):
+        # Calculate absolute difference for each channel in color images
+        if isinstance(orig_pixel, tuple):  # Color image (e.g., RGB)
+            difference = max(abs(o - c) for o, c in zip(orig_pixel, comp_pixel))
+        else:  # Grayscale image
+            difference = abs(orig_pixel - comp_pixel)
 
-            # Calculate the absolute difference
-            if isinstance(orig_pixel, tuple):  # Color image
-                difference = max(abs(o - c) for o, c in zip(orig_pixel, comp_pixel))
-            else:  # Grayscale image
-                difference = abs(orig_pixel - comp_pixel)
-
-            # Update the maximum difference
-            if difference > max_diff:
-                max_diff = difference
+        # Update the maximum difference
+        if difference > max_diff:
+            max_diff = difference
 
     return max_diff
+

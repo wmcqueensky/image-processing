@@ -157,6 +157,14 @@ if 'psnr' in args_dict:
     print(f'Peak Signal to Noise Ratio (PSNR) between original and denoised image: {psnr_value}')
     
 if 'md' in args_dict:
-    md_value = maximum_difference(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
-    print(f'Maximum Difference (MD) between original and denoised image: {md_value}')    
+
+    alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
+    kernel_size = 3  # Adjust as needed
+
+    # Apply alpha-trimmed mean filter to the noisy image
+    denoised_pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
+
+    md_value = maximum_difference(original_pixels, denoised_pixels)
+    print(f'Maximum Difference (MD) between original and denoised image: {md_value}')
+
     
