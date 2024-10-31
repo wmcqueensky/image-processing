@@ -89,6 +89,16 @@ if 'alpha' in args_dict:
     except ValueError:
         print("Error: Alpha value must be an integer.")
 
+if 'gmean' in args_dict:
+    try:
+        gmean_value = int(args_dict['gmean'])
+        kernel_size = 3  # Default kernel size, can make this configurable
+        print(f"Applying geometric mean filter with value {gmean_value}")
+        pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
+        save_image(pixels, mode, size, 'output_gmean.bmp')  # Save
+    except ValueError:
+        print("Error: Gmean value must be an integer.")
+
 # Perform MSE calculation if specified
 if 'mse' in args_dict:
     alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
