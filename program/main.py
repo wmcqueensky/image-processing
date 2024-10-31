@@ -142,9 +142,6 @@ if 'snr' in args_dict:
     snr_value = signal_to_noise_ratio(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
     print(f'Signal to Noise Ratio (SNR) between original and denoised image: {snr_value}')
 
-
-
-
 if 'psnr' in args_dict:
     alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
     kernel_size = 3  # Adjust as needed
@@ -168,3 +165,61 @@ if 'md' in args_dict:
     print(f'Maximum Difference (MD) between original and denoised image: {md_value}')
 
     
+if 'mse_gmean' in args_dict:
+    kernel_size = 3  # Set default kernel size, can be adjusted
+
+    # Calculate MSE between original and noisy image
+    mse_noisy = mean_square_error(original_pixels, noisy_pixels, size_noisy[0], size_noisy[1])
+
+    # Apply geometric mean filter to the noisy image
+    gmean_filtered_pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+
+    # Calculate MSE between original and geometric mean-filtered image
+    mse_denoised_gmean = mean_square_error(original_pixels, gmean_filtered_pixels, size_noisy[0], size_noisy[1])
+
+    # Print the MSE results
+    print(f'Mean Square Error (MSE) between original and noisy image: {mse_noisy}')
+    print(f'Mean Square Error (MSE) between original and geometric mean filtered image: {mse_denoised_gmean}')
+    print(f'Difference between noisy and geometric mean filtered image MSE: {mse_noisy - mse_denoised_gmean}')
+
+# Perform PMSE calculation with geometric mean filter if specified
+if 'pmse_gmean' in args_dict:
+    kernel_size = 3  # Set default kernel size, can be adjusted
+
+    # Apply geometric mean filter to the noisy image
+    gmean_filtered_pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+    pmse_value_gmean = peak_mean_square_error(original_pixels, gmean_filtered_pixels, size_noisy[0], size_noisy[1])
+    print(f'Peak Mean Square Error (PMSE) between original and geometric mean filtered image: {pmse_value_gmean}')
+
+# Perform SNR calculation with geometric mean filter if specified
+if 'snr_gmean' in args_dict:
+    kernel_size = 3  # Set default kernel size, can be adjusted
+
+    # Apply geometric mean filter to the noisy image
+    gmean_filtered_pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+
+    # Calculate SNR between original and geometric mean-filtered image
+    snr_value_gmean = signal_to_noise_ratio(original_pixels, gmean_filtered_pixels, size_noisy[0], size_noisy[1])
+    print(f'Signal to Noise Ratio (SNR) between original and geometric mean filtered image: {snr_value_gmean}')
+
+# Perform PSNR calculation with geometric mean filter if specified
+if 'psnr_gmean' in args_dict:
+    kernel_size = 3  # Set default kernel size, can be adjusted
+
+    # Apply geometric mean filter to the noisy image
+    gmean_filtered_pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+
+    # Calculate PSNR between original and geometric mean-filtered image
+    psnr_value_gmean = peak_signal_to_noise_ratio(original_pixels, gmean_filtered_pixels, size_noisy[0], size_noisy[1])
+    print(f'Peak Signal to Noise Ratio (PSNR) between original and geometric mean filtered image: {psnr_value_gmean}')
+
+# Perform MD calculation with geometric mean filter if specified
+if 'md_gmean' in args_dict:
+    kernel_size = 3  # Set default kernel size, can be adjusted
+
+    # Apply geometric mean filter to the noisy image
+    gmean_filtered_pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+
+    # Calculate Maximum Difference (MD) between original and geometric mean-filtered image
+    md_value_gmean = maximum_difference(original_pixels, gmean_filtered_pixels)
+    print(f'Maximum Difference (MD) between original and geometric mean filtered image: {md_value_gmean}')
