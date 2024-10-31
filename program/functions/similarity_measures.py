@@ -53,14 +53,14 @@ def signal_to_noise_ratio(original, modified, width, height):
     return snr
 
 
-# def peak_signal_to_noise_ratio(original, modified):
-#     """Calculates the Peak Signal to Noise Ratio."""
-#     mse = mean_square_error(original, modified)
-#     if mse == 0:
-#         return float('inf')  # PSNR is infinite if there is no error
-#     psnr = 10 * (255 ** 2 / mse)
-#     return psnr
-#
+def peak_signal_to_noise_ratio(original, modified, width, height):
+    """Calculates the Peak Signal to Noise Ratio."""
+    mse = mean_square_error(original, modified, width, height)
+    if mse == 0:
+        return float('inf')  # PSNR is infinite if there is no error
+    psnr = 10 * (255 ** 2 / mse)
+    return psnr
+
 def maximum_difference(original_pixels, filtered_pixels, width, height):
     """Calculate Maximum Difference (MD) between original and filtered image."""
 
@@ -85,4 +85,3 @@ def maximum_difference(original_pixels, filtered_pixels, width, height):
                 max_diff = difference
 
     return max_diff
-
