@@ -3,7 +3,7 @@ import sys
 from functions.elementary import adjust_brightness, adjust_contrast, apply_negative
 from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
-from functions.similarity_measures import mean_square_error, peak_mean_square_error
+from functions.similarity_measures import mean_square_error, peak_mean_square_error, maximum_difference
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -127,3 +127,14 @@ if 'pmse' in args_dict:
     pmse_value = peak_mean_square_error(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
     print(f'Peak Mean Square Error (PMSE) between original and denoised image: {pmse_value}')
 
+
+
+if 'md' in args_dict:
+    alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
+    kernel_size = 3  # Adjust as needed
+
+    # Apply alpha-trimmed mean filter to the noisy image
+    denoised_pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
+
+    md_value = maximum_difference(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
+    print(f'Maximum Difference (MD) between original and denoised image: {md_value}')

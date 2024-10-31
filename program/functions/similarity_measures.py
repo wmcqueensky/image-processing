@@ -63,11 +63,28 @@ def peak_mean_square_error(original_pixels, filtered_pixels, width, height):
 #     psnr = 10 * (255 ** 2 / mse)
 #     return psnr
 #
-# def maximum_difference(original, modified):
-#     """Calculates the Maximum Difference between two images."""
-#     max_diff = max(
-#         max(abs(o_channel - m_channel) for o_channel, m_channel in zip(o, m))  # Compute max difference per pixel
-#         for o, m in zip(original, modified)  # Loop through each pixel
-#     )
-#     return max_diff
-#
+def maximum_difference(original_pixels, filtered_pixels, width, height):
+    """Calculate Maximum Difference (MD) between original and filtered image."""
+
+
+    max_diff = 0.0  # Initialize maximum difference
+
+    # Loop through each pixel by coordinates
+    for y in range(height):
+        for x in range(width):
+            # Access the pixels directly
+            orig_pixel = original_pixels[y][x]
+            comp_pixel = filtered_pixels[y][x]
+
+            # Calculate the absolute difference
+            if isinstance(orig_pixel, tuple):  # Color image
+                difference = max(abs(o - c) for o, c in zip(orig_pixel, comp_pixel))
+            else:  # Grayscale image
+                difference = abs(orig_pixel - comp_pixel)
+
+            # Update the maximum difference
+            if difference > max_diff:
+                max_diff = difference
+
+    return max_diff
+
