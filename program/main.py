@@ -3,7 +3,7 @@ import sys
 from functions.elementary import adjust_brightness, adjust_contrast, apply_negative
 from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
-from functions.similarity_measures import mean_square_error, peak_mean_square_error
+from functions.similarity_measures import mean_square_error
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -78,6 +78,16 @@ if 'enlarge' in args_dict:
     pixels, new_width, new_height = enlarge_image(pixels, size[0], size[1], enlarge_factor)
     size = (new_width, new_height)
     save_image(pixels, mode, size, 'output_enlarge.bmp')  # Save after enlarging
+
+if 'alpha' in args_dict:
+    try:
+        alpha_value = int(args_dict['alpha'])
+        kernel_size = 3  # Default kernel size, can make this configurable
+        print(f"Applying alpha-trimmed mean filter with alpha {alpha_value}")
+        pixels = alpha_trimmed_mean_filter(pixels, size[0], size[1], kernel_size, alpha_value)
+        save_image(pixels, mode, size, 'output_alpha.bmp')  # Save
+    except ValueError:
+        print("Error: Alpha value must be an integer.")
 
 # Perform MSE calculation if specified
 if 'mse' in args_dict:
