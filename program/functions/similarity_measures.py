@@ -1,6 +1,3 @@
-from .noise_removal import alpha_trimmed_mean_filter
-
-
 def mean_square_error(original_pixels, compared_pixels, width, height):
     """Calculate Mean Square Error (MSE) between the original image and another image."""
     sum_squared_error = 0.0  # Initialize sum of squared differences
@@ -42,19 +39,20 @@ def peak_mean_square_error(original_pixels, filtered_pixels, width, height):
     return pmse
 
 
-#
-# def signal_to_noise_ratio(original, modified):
-#     """Calculates the Signal to Noise Ratio."""
-#     mse = mean_square_error(original, modified)
-#
-#     # Calculate signal power
-#     signal_power = sum(sum(o_channel ** 2 for o_channel in o) for o in original) / (len(original) * 3)  # Average for R, G, B
-#
-#     if mse == 0:
-#         return float('inf')  # SNR is infinite if there is no error
-#     snr = 10 * (signal_power / mse) ** 0.5
-#     return snr
-#
+
+def signal_to_noise_ratio(original, modified, width, height):
+    """Calculates the Signal to Noise Ratio."""
+    mse = mean_square_error(original, modified, width, height)
+
+    # Calculate signal power
+    signal_power = sum(sum(o_channel ** 2 for o_channel in o) for o in original) / (len(original) * 3)  # Average for R, G, B
+
+    if mse == 0:
+        return float('inf')  # SNR is infinite if there is no error
+    snr = 10 * (signal_power / mse) ** 0.5
+    return snr
+
+
 # def peak_signal_to_noise_ratio(original, modified):
 #     """Calculates the Peak Signal to Noise Ratio."""
 #     mse = mean_square_error(original, modified)

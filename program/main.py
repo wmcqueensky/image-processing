@@ -3,7 +3,7 @@ import sys
 from functions.elementary import adjust_brightness, adjust_contrast, apply_negative
 from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
-from functions.similarity_measures import mean_square_error, peak_mean_square_error, maximum_difference
+from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -79,22 +79,24 @@ if 'enlarge' in args_dict:
     size = (new_width, new_height)
     save_image(pixels, mode, size, 'output_enlarge.bmp')  # Save after enlarging
 
+# Apply alpha-trimmed mean filter if specified
 if 'alpha' in args_dict:
     try:
         alpha_value = int(args_dict['alpha'])
         kernel_size = 3  # Default kernel size, can make this configurable
         print(f"Applying alpha-trimmed mean filter with alpha {alpha_value}")
-        pixels = alpha_trimmed_mean_filter(pixels, size[0], size[1], kernel_size, alpha_value)
+        pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
         save_image(pixels, mode, size, 'output_alpha.bmp')  # Save
     except ValueError:
         print("Error: Alpha value must be an integer.")
 
+# Apply geometric mean filter if specified
 if 'gmean' in args_dict:
     try:
         gmean_value = int(args_dict['gmean'])
         kernel_size = 3  # Default kernel size, can make this configurable
         print(f"Applying geometric mean filter with value {gmean_value}")
-        pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
+        pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
         save_image(pixels, mode, size, 'output_gmean.bmp')  # Save
     except ValueError:
         print("Error: Gmean value must be an integer.")
@@ -118,6 +120,7 @@ if 'mse' in args_dict:
     print(f'Mean Square Error (MSE) between original and denoised image: {mse_denoised}')
     print(f'The difference between noisy image and denoised image equals: {mse_noisy - mse_denoised}')
 
+# Perform PMSE calculation if specified
 if 'pmse' in args_dict:
     alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
     kernel_size = 3  # Adjust as needed
@@ -126,6 +129,18 @@ if 'pmse' in args_dict:
     denoised_pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
     pmse_value = peak_mean_square_error(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
     print(f'Peak Mean Square Error (PMSE) between original and denoised image: {pmse_value}')
+
+# Perform SNR calculation if specified
+if 'snr' in args_dict:
+    alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
+    kernel_size = 3  # Adjust as needed
+
+    # Apply alpha-trimmed mean filter to the noisy image
+    denoised_pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
+
+    # Calculate SNR between original and denoised image
+    snr_value = signal_to_noise_ratio(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
+    print(f'Signal to Noise Ratio (SNR) between original and denoised image: {snr_value}')
 
 
 
