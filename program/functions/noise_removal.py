@@ -1,11 +1,10 @@
 import math
-#N7
+
 def alpha_trimmed_mean_filter(pixels, width, height, kernel_size, alpha):
     """Apply alpha-trimmed mean filter to the image."""
     print(f"Applying Alpha-trimmed Mean Filter with alpha={alpha} and kernel size={kernel_size}")
     new_pixels = []
     k = kernel_size // 2  # kernel radius
-    total_trim = 2 * alpha  # trim from both ends
 
     for y in range(height):
         for x in range(width):
@@ -17,9 +16,10 @@ def alpha_trimmed_mean_filter(pixels, width, height, kernel_size, alpha):
                     nx = min(max(x + kx, 0), width - 1)
                     neighborhood.append(pixels[ny * width + nx])
 
-            # Sort and trim the extremes
+            # Sort and trim extremes based on alpha
             neighborhood.sort()
-            trimmed_neighborhood = neighborhood[alpha: len(neighborhood) - alpha]
+            trim_count = min(alpha, len(neighborhood) // 2)
+            trimmed_neighborhood = neighborhood[trim_count: len(neighborhood) - trim_count]
 
             # Compute the mean of the remaining values
             if isinstance(trimmed_neighborhood[0], int):  # Grayscale image
@@ -51,12 +51,13 @@ def geometric_mean_filter(pixels, width, height, kernel_size):
 
             # Compute the geometric mean
             if isinstance(neighborhood[0], int):  # Grayscale image
-                product = math.prod(neighborhood)
+                # Handle zeros by adding a small value (if needed)
+                product = math.prod([max(val, 1e-10) for val in neighborhood])
                 gmean_value = int(math.pow(product, 1 / len(neighborhood)))
                 new_pixels.append(gmean_value)
             else:  # RGB image
                 gmean_pixel = tuple(
-                    int(math.pow(math.prod(channel_values), 1 / len(neighborhood)))
+                    int(math.pow(math.prod([max(val, 1e-10) for val in channel_values]), 1 / len(neighborhood)))
                     for channel_values in zip(*neighborhood)
                 )
                 new_pixels.append(gmean_pixel)

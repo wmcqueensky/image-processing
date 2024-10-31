@@ -20,6 +20,7 @@ def vertical_flip(pixels, width, height):
 
 def diagonal_flip(pixels, width, height):
     """Flip the image diagonally by first applying a vertical flip and then a horizontal flip."""
+    ##nie wiem czy to dobrze działa :(
     print("Applying diagonal flip (vertical flip followed by horizontal flip)")
 
     # Step 1: Vertical flip
