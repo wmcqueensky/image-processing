@@ -30,23 +30,17 @@ def mean_square_error(original_pixels, compared_pixels, width, height):
     return mse
 
 
-def peak_mean_square_error(original_pixels, filtered_pixels):
+def peak_mean_square_error(original_pixels, filtered_pixels, width, height):
     """Calculate Peak Mean Square Error (PMSE) between original and filtered image."""
-    # Assuming original_pixels and filtered_pixels are both 2D arrays
-    height = len(original_pixels)  # Number of rows (height)
-    width = len(original_pixels[0]) if height > 0 else 0  # Number of columns (width)
-
-    # Ensure filtered_pixels has the same dimensions
-    if len(filtered_pixels) != height or (height > 0 and len(filtered_pixels[0]) != width):
-        raise ValueError("Filtered pixels must have the same dimensions as original pixels.")
-
-    # Calculate MSE
+    # Calculate MSE using the mean_square_error function
     mse_value = mean_square_error(original_pixels, filtered_pixels, width, height)
-    peak_value = 255.0  # Assuming 8-bit image depth (values from 0 to 255)
 
-    # Calculate PMSE, avoiding division by zero
-    pmse = peak_value ** 2 / mse_value if mse_value != 0 else float('inf')
+    # Calculate PMSE
+    peak_value = 255.0  # Assuming 8-bit image depth (values from 0 to 255)
+    pmse = (peak_value ** 2) / mse_value if mse_value != 0 else float('inf')  # Avoid division by zero
+
     return pmse
+
 
 #
 # def signal_to_noise_ratio(original, modified):
