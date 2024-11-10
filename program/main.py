@@ -4,6 +4,7 @@ from functions.elementary import adjust_brightness, adjust_contrast, apply_negat
 from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
 from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio, peak_signal_to_noise_ratio, maximum_difference
+from functions.histogram import save_histogram_image
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -223,3 +224,13 @@ if 'md_gmean' in args_dict:
     # Calculate Maximum Difference (MD) between original and geometric mean-filtered image
     md_value_gmean = maximum_difference(original_pixels, gmean_filtered_pixels)
     print(f'Maximum Difference (MD) between original and geometric mean filtered image: {md_value_gmean}')
+
+if 'histogram' in args_dict:
+    print("Calculating and saving histogram...")
+
+    # Get the output path for the histogram image (default is 'histogram.png')
+    histogram_image_path = args_dict.get('histogram_output', 'histogram.png')
+
+    # Call the save_histogram_image function with the correct arguments
+    save_histogram_image(pixels, mode, histogram_image_path)
+
