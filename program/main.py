@@ -1,10 +1,13 @@
 import sys
+from statistics import variance
 
 from functions.elementary import adjust_brightness, adjust_contrast, apply_negative
 from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, shrink_image, enlarge_image
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
 from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio, peak_signal_to_noise_ratio, maximum_difference
-from functions.histogram import save_histogram_image
+from functions.histogram import save_histogram_image, calculate_histogram
+from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb
+from functions.characteristics import calculate_variance
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -153,7 +156,7 @@ if 'psnr' in args_dict:
     # Calculate PSNR between original and denoised image
     psnr_value = peak_signal_to_noise_ratio(original_pixels, denoised_pixels, size_noisy[0], size_noisy[1])
     print(f'Peak Signal to Noise Ratio (PSNR) between original and denoised image: {psnr_value}')
-    
+
 if 'md' in args_dict:
 
     alpha_value = int(args_dict.get('alpha', 0))  # Default alpha value
@@ -165,7 +168,7 @@ if 'md' in args_dict:
     md_value = maximum_difference(original_pixels, denoised_pixels)
     print(f'Maximum Difference (MD) between original and denoised image: {md_value}')
 
-    
+
 if 'mse_gmean' in args_dict:
     kernel_size = 3  # Set default kernel size, can be adjusted
 
@@ -240,6 +243,38 @@ if 'histogram' in args_dict:
 
     # Call the save_histogram_image function with the correct arguments
     save_histogram_image(pixels, mode, histogram_image_path, channels)
+
+if 'cmean' in args_dict:
+    print("Calculating mean...")
+
+    # Get the histogram of the image
+    histogram = calculate_histogram(pixels, mode)
+
+    # If the image is RGB, we need to handle it differently
+    if mode == 'RGB':
+        print("Calculating mean for color image...")
+        mean_rgb = calculate_mean_rgb(histogram)  # Calculate mean for RGB
+    else:
+        print("Calculating mean for gray image...")
+        mean = calculate_mean(histogram)  # Calculate mean for grayscale
+
+
+if 'cvariance' in args_dict:
+    print("Calculating variance")
+
+    # Get the histogram of the image
+    histogram = calculate_histogram(pixels, mode)
+
+
+    if mode == 'RGB':
+        print("Calculating variance for color image...")
+        mean_rgb = calculate_mean_rgb(histogram)  # Calculate mean for RGB
+        variance = calculate_variance_rgb(histogram, mean_rgb)
+    else:
+        print("Calculating variance for gray image...")
+        mean = calculate_mean(histogram)  # Calculate mean for grayscale
+        variance = calculate_variance(histogram, mean)
+
 
 
 
