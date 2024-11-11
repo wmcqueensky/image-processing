@@ -29,7 +29,7 @@ def calculate_histogram(image_pixels, mode):
         return r_histogram, g_histogram, b_histogram
 
 
-def save_histogram_image(image_pixels, mode, output_path="histogram.png"):
+def save_histogram_image(image_pixels, mode, output_path="histogram.png", channels=None):
     """
     Given the image pixels and mode, calculate the histogram and save it as an image.
     """
@@ -46,19 +46,36 @@ def save_histogram_image(image_pixels, mode, output_path="histogram.png"):
         red_hist, green_hist, blue_hist = histogram_data
         max_val = max(max(red_hist), max(green_hist), max(blue_hist))  # Find max value for scaling
 
-        # Scale the histograms to fit the image height
-        for i in range(256):
-            # For each channel, draw bars for the histogram
-            red_height = int((red_hist[i] / max_val) * height)
-            green_height = int((green_hist[i] / max_val) * height)
-            blue_height = int((blue_hist[i] / max_val) * height)
+        if not channels:  # If no channel is specified, show all channels
+            for i in range(256):
+                red_height = int((red_hist[i] / max_val) * height)
+                green_height = int((green_hist[i] / max_val) * height)
+                blue_height = int((blue_hist[i] / max_val) * height)
 
-            for y in range(height - red_height, height):
-                pixel_data[i, y] = (255 - red_height, 0, 0)  # Red channel (Red bar)
-            for y in range(height - green_height, height):
-                pixel_data[i, y] = (0, 255 - green_height, 0)  # Green channel (Green bar)
-            for y in range(height - blue_height, height):
-                pixel_data[i, y] = (0, 0, 255 - blue_height)  # Blue channel (Blue bar)
+                for y in range(height - red_height, height):
+                    pixel_data[i, y] = (255 - red_height, 0, 0)  # Red channel (Red bar)
+                for y in range(height - green_height, height):
+                    pixel_data[i, y] = (0, 255 - green_height, 0)  # Green channel (Green bar)
+                for y in range(height - blue_height, height):
+                    pixel_data[i, y] = (0, 0, 255 - blue_height)  # Blue channel (Blue bar)
+
+        else:  # If a specific channel is provided, only draw that channel
+            for i in range(256):
+                if 'red' in channels:
+                    red_height = int((red_hist[i] / max_val) * height)
+                    for y in range(height - red_height, height):
+                        pixel_data[i, y] = (255 - red_height, 0, 0)  # Red channel (Red bar)
+
+                if 'green' in channels:
+                    green_height = int((green_hist[i] / max_val) * height)
+                    for y in range(height - green_height, height):
+                        pixel_data[i, y] = (0, 255 - green_height, 0)  # Green channel (Green bar)
+
+                if 'blue' in channels:
+                    blue_height = int((blue_hist[i] / max_val) * height)
+                    for y in range(height - blue_height, height):
+                        pixel_data[i, y] = (0, 0, 255 - blue_height)  # Blue channel (Blue bar)
+
     else:  # Grayscale image, histogram has one channel
         max_val = max(histogram_data)  # Find max value for scaling
 

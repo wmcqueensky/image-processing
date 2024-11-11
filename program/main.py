@@ -231,6 +231,15 @@ if 'histogram' in args_dict:
     # Get the output path for the histogram image (default is 'histogram.png')
     histogram_image_path = args_dict.get('histogram_output', 'histogram.png')
 
+    # Get the list of channels (if any)
+    channels = args_dict.get('channel', [])
+
+    # If channels were provided, ensure it's a list (could be empty or None)
+    if isinstance(channels, str):  # In case only one channel was passed as a string
+        channels = [channels]
+
     # Call the save_histogram_image function with the correct arguments
-    save_histogram_image(pixels, mode, histogram_image_path)
+    save_histogram_image(pixels, mode, histogram_image_path, channels)
+
+
 
