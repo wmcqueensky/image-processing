@@ -431,3 +431,6 @@ if "centropy" in args_dict:
         entropy_values = calculate_entropy(histogram)
 
     print(f"Entropy value: ${entropy_values}")
+
+
+if "sexdeti" in args_dict:
