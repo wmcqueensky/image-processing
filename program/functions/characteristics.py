@@ -104,3 +104,41 @@ def calculate_asymmetry_coefficient_rgb(histograms):
         coefficients[channel_names[i]] = b_S
 
     return coefficients
+
+
+def calculate_flattening_coefficient(histogram):
+    """
+    Calculate the Flattening coefficient (bK) using the formula:
+    bK = (1 / (σ^4 * N)) * Σ (m - b̄)^4 * H(m) - 3, where m = 0 to L-1
+    b̄: Mean brightness based on the histogram
+    σ: Standard deviation
+    N: Total number of pixels
+    H(m): Histogram value for brightness level m
+    """
+    mean = calculate_mean(histogram)  # Calculate mean brightness
+    variance = calculate_variance(histogram, mean)  # Calculate variance
+    sigma = math.sqrt(variance)  # Standard deviation (σ)
+    total_pixels = sum(histogram)  # N: total number of pixels
+
+    # Flattening coefficient (bK) calculation
+    bK = (1 / (sigma ** 4 * total_pixels)) * sum((m - mean) ** 4 * histogram[m] for m in range(256)) - 3
+
+    print(f"Flattening coefficient (bK): {bK}")
+    return bK
+
+
+def calculate_flattening_coefficient_rgb(histograms):
+    """
+    Calculate the Flattening coefficient for each channel (R, G, B) of an RGB image.
+    histograms: A tuple (r_histogram, g_histogram, b_histogram)
+    """
+    flattening_coeffs = {}
+    channel_names = ['Red', 'Green', 'Blue']
+
+    # Calculate the flattening coefficient for each channel
+    for i, histogram in enumerate(histograms):
+        bK = calculate_flattening_coefficient(histogram)
+        flattening_coeffs[channel_names[i]] = bK
+
+    print(f"Flattening coefficients for RGB channels: {flattening_coeffs}")
+    return flattening_coeffs

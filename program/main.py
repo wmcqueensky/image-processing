@@ -7,7 +7,8 @@ from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_fi
 from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio, peak_signal_to_noise_ratio, maximum_difference
 from functions.histogram import save_histogram_image, calculate_histogram
 from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb, \
-    calculate_asymmetry_coefficient, calculate_asymmetry_coefficient_rgb
+    calculate_asymmetry_coefficient, calculate_asymmetry_coefficient_rgb, calculate_flattening_coefficient_rgb, \
+    calculate_flattening_coefficient
 from functions.characteristics import calculate_variance
 from functions.characteristics import calculate_standard_dev
 from functions.characteristics import calculate_variation_coefficient_1
@@ -383,4 +384,17 @@ if "casyco" in args_dict:
         asym_coe = calculate_asymmetry_coefficient(histogram)
 
     print("Asymmetry Coefficient:", asym_coe)
+
+
+
+if "flaco" in args_dict:
+
+    if mode == 'RGB':
+        r_histogram, g_histogram, b_histogram = calculate_histogram(pixels, mode)
+        # Compute flattening coefficient using the histogram
+        flat_coe = calculate_flattening_coefficient_rgb((r_histogram, g_histogram, b_histogram))
+    else:
+        histogram = calculate_histogram(pixels, mode)
+        # Compute flattening coefficient using the histogram
+        flat_coe = calculate_flattening_coefficient(histogram)
 
