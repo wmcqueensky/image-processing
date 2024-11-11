@@ -8,7 +8,8 @@ from functions.similarity_measures import mean_square_error, peak_mean_square_er
 from functions.histogram import save_histogram_image, calculate_histogram
 from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb, \
     calculate_asymmetry_coefficient, calculate_asymmetry_coefficient_rgb, calculate_flattening_coefficient_rgb, \
-    calculate_flattening_coefficient
+    calculate_flattening_coefficient, calculate_variation_coefficient_2_rgb, calculate_variation_coefficient_2, \
+    calculate_entropy_rgb, calculate_entropy
 from functions.characteristics import calculate_variance
 from functions.characteristics import calculate_standard_dev
 from functions.characteristics import calculate_variation_coefficient_1
@@ -294,10 +295,11 @@ if 'cmean' in args_dict:
     # If the image is RGB, we need to handle it differently
     if mode == 'RGB':
         print("Calculating mean for color image...")
-        mean_rgb = calculate_mean_rgb(histogram)  # Calculate mean for RGB
+        mean = calculate_mean_rgb(histogram)  # Calculate mean for RGB
     else:
         print("Calculating mean for gray image...")
         mean = calculate_mean(histogram)  # Calculate mean for grayscale
+    print(f"Mean value: ${mean}")
 
 
 if 'cvariance' in args_dict:
@@ -316,6 +318,8 @@ if 'cvariance' in args_dict:
         mean = calculate_mean(histogram)  # Calculate mean for grayscale
         variance = calculate_variance(histogram, mean)
 
+    print(f"Variance value: ${variance}")
+
 
 if "cstdev" in args_dict:
     print("Calculating standard deviation")
@@ -332,14 +336,15 @@ if "cstdev" in args_dict:
         avg_variance = sum(variances.values()) / len(variances)
 
         # Calculate the standard deviation based on the average variance
-        calculate_standard_dev(avg_variance)
+        st_dev = calculate_standard_dev(avg_variance)
 
     else:
         print("Calculating variance for gray image...")
         mean = calculate_mean(histogram)  # Calculate mean for grayscale
         variance = calculate_variance(histogram, mean)
-        calculate_standard_dev(variance)
+        st_dev = calculate_standard_dev(variance)
 
+    print(f"Standard deviation value: ${st_dev}")
 
 
 if "cvarcoi" in args_dict:
@@ -369,7 +374,9 @@ if "cvarcoi" in args_dict:
         dev = calculate_standard_dev(variance)
 
     # Calculate and print the variation coefficient (stdev / mean)
-    calculate_variation_coefficient_1(dev, mean)
+    var_co = calculate_variation_coefficient_1(dev, mean)
+
+    print(f"Variation coefficient value: ${var_co}")
 
 
 if "casyco" in args_dict:
@@ -398,3 +405,29 @@ if "flaco" in args_dict:
         # Compute flattening coefficient using the histogram
         flat_coe = calculate_flattening_coefficient(histogram)
 
+    print(f"Flattening coefficient value: ${flat_coe}")
+
+
+if "cvarcoii" in args_dict:
+    if mode == 'RGB':
+        r_histogram, g_histogram, b_histogram = calculate_histogram(pixels, mode)
+        # Compute Variation Coefficient 2 for each channel
+        var_coeffs = calculate_variation_coefficient_2_rgb((r_histogram, g_histogram, b_histogram))
+    else:
+        histogram = calculate_histogram(pixels, mode)
+        # Compute Variation Coefficient 2 for grayscale
+        var_coeffs = calculate_variation_coefficient_2(histogram)
+    print(f"Variation coefficient II: ${var_coeffs}")
+
+
+if "centropy" in args_dict:
+    if mode == 'RGB':
+        r_histogram, g_histogram, b_histogram = calculate_histogram(pixels, mode)
+        # Compute entropy for each channel
+        entropy_values = calculate_entropy_rgb((r_histogram, g_histogram, b_histogram))
+    else:
+        histogram = calculate_histogram(pixels, mode)
+        # Compute entropy for grayscale
+        entropy_values = calculate_entropy(histogram)
+
+    print(f"Entropy value: ${entropy_values}")

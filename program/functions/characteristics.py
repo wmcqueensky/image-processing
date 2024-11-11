@@ -12,7 +12,6 @@ def calculate_mean(histogram):
     total_pixels = sum(histogram)  # N: total number of pixels
     mean = sum(m * histogram[m] for m in range(256)) / total_pixels  # sum of m * H(m)
 
-    print(f"Histogram-based mean: {mean}")
     return mean
 
 def calculate_mean_rgb(histograms):
@@ -26,7 +25,6 @@ def calculate_mean_rgb(histograms):
         mean = sum(i * hist[i] for i in range(256)) / total_pixels
         means.append(mean)
 
-    print(f"Histogram-based means for RGB channels: {means}")
     return means  # This returns a list [mean_r, mean_g, mean_b]
 
 
@@ -43,7 +41,7 @@ def calculate_variance(histogram, mean):
     total_pixels = sum(histogram)  # N: total number of pixels
     variance = sum((m - mean) ** 2 * histogram[m] for m in range(256)) / total_pixels  # sum of (m - b̄)^2 * H(m)
 
-    print(f"Variance: {variance}")
+
     return variance
 
 def calculate_variance_rgb(histograms, means):
@@ -60,18 +58,18 @@ def calculate_variance_rgb(histograms, means):
         channel_name = ['Red', 'Green', 'Blue'][i]
         variances[channel_name] = variance
 
-    print(f"Variance for RGB channels: {variances}")
+
     return variances
 
 def calculate_standard_dev(variance):
     st_dev = math.sqrt(variance)
-    print(f"Standard deviation: {st_dev}")
+
     return st_dev
 
 
 def calculate_variation_coefficient_1 (mean, deviation):
     v_c_1 = deviation/mean
-    print(f"Variation coefficient 1: {v_c_1}")
+
     return v_c_1
 
 
@@ -123,7 +121,7 @@ def calculate_flattening_coefficient(histogram):
     # Flattening coefficient (bK) calculation
     bK = (1 / (sigma ** 4 * total_pixels)) * sum((m - mean) ** 4 * histogram[m] for m in range(256)) - 3
 
-    print(f"Flattening coefficient (bK): {bK}")
+
     return bK
 
 
@@ -140,5 +138,72 @@ def calculate_flattening_coefficient_rgb(histograms):
         bK = calculate_flattening_coefficient(histogram)
         flattening_coeffs[channel_names[i]] = bK
 
-    print(f"Flattening coefficients for RGB channels: {flattening_coeffs}")
+
     return flattening_coeffs
+
+
+
+def calculate_variation_coefficient_2(histogram):
+    """
+    Calculate the Variation Coefficient 2 (bN) using the formula:
+    bN = (1 / N^2) * Σ (H(m))^2, where m = 0 to L-1
+    N: Total number of pixels
+    H(m): Histogram value for brightness level m
+    """
+    total_pixels = sum(histogram)  # N: total number of pixels
+
+    # Sum of squared histogram values
+    sum_of_squares = sum(H_m ** 2 for H_m in histogram)
+
+    # Variation Coefficient 2 calculation
+    bN = sum_of_squares / (total_pixels ** 2)
+
+
+    return bN
+
+
+def calculate_variation_coefficient_2_rgb(histograms):
+    """
+    Calculate the Variation Coefficient 2 for each channel (R, G, B) of an RGB image.
+    histograms: A tuple (r_histogram, g_histogram, b_histogram)
+    """
+    variation_coeffs = {}
+    channel_names = ['Red', 'Green', 'Blue']
+
+    # Calculate the Variation Coefficient 2 for each channel
+    for i, histogram in enumerate(histograms):
+        bN = calculate_variation_coefficient_2(histogram)
+        variation_coeffs[channel_names[i]] = bN
+
+
+    return variation_coeffs
+
+
+def calculate_entropy(histogram):
+    """
+    Calculate the Information Source Entropy (bE) using the formula:
+    bE = - (1 / N) * Σ H(m) * log2(H(m) / N), where m = 0 to L-1
+    """
+    total_pixels = sum(histogram)  # N: total number of pixels
+
+    # Entropy calculation, avoiding log(0) by checking if H(m) > 0
+    entropy = -sum(H_m * math.log2(H_m / total_pixels) for H_m in histogram if H_m > 0) / total_pixels
+
+    return entropy
+
+
+def calculate_entropy_rgb(histograms):
+    """
+    Calculate the Information Source Entropy for each channel (R, G, B) of an RGB image.
+    histograms: A tuple (r_histogram, g_histogram, b_histogram)
+    """
+    entropy_values = {}
+    channel_names = ['Red', 'Green', 'Blue']
+
+    # Calculate the entropy for each channel
+    for i, histogram in enumerate(histograms):
+        bE = calculate_entropy(histogram)
+        entropy_values[channel_names[i]] = bE
+
+
+    return entropy_values
