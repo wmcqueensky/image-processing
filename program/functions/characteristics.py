@@ -63,3 +63,13 @@ def calculate_variance_rgb(histograms, means):
     print(f"Variance for RGB channels: {variances}")
     return variances
 
+def calculate_standard_dev(variance):
+    st_dev = math.sqrt(variance)
+    print(f"Standard deviation: {st_dev}")
+    return st_dev
+
+
+def calculate_variation_coefficient_1 (mean, deviation):
+    v_c_1 = deviation/mean
+    print(f"Variation coefficient 1: {v_c_1}")
+    return v_c_1

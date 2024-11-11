@@ -8,6 +8,8 @@ from functions.similarity_measures import mean_square_error, peak_mean_square_er
 from functions.histogram import save_histogram_image, calculate_histogram
 from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb
 from functions.characteristics import calculate_variance
+from functions.characteristics import calculate_standard_dev
+from functions.characteristics import calculate_variation_coefficient_1
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -276,5 +278,56 @@ if 'cvariance' in args_dict:
         variance = calculate_variance(histogram, mean)
 
 
+if "cstdev" in args_dict:
+    print("Calculating standard deviation")
+
+    # Get the histogram of the image
+    histogram = calculate_histogram(pixels, mode)
+
+    if mode == 'RGB':
+        print("Calculating variance for color image...")
+        mean_rgb = calculate_mean_rgb(histogram)  # Calculate mean for RGB
+        variances = calculate_variance_rgb(histogram, mean_rgb)  # Variance for each RGB channel
+
+        # Calculate the average variance from all RGB channels
+        avg_variance = sum(variances.values()) / len(variances)
+
+        # Calculate the standard deviation based on the average variance
+        calculate_standard_dev(avg_variance)
+
+    else:
+        print("Calculating variance for gray image...")
+        mean = calculate_mean(histogram)  # Calculate mean for grayscale
+        variance = calculate_variance(histogram, mean)
+        calculate_standard_dev(variance)
 
 
+
+if "cvarcoi" in args_dict:
+    print("Calculating variation coefficient")
+
+    # Use previously calculated histogram
+    histogram = calculate_histogram(pixels, mode)
+
+    if mode == 'RGB':
+        print("Calculating variation coefficient for color image...")
+        mean_rgb = calculate_mean_rgb(histogram)  # Calculate mean for RGB
+        variances = calculate_variance_rgb(histogram, mean_rgb)  # Variances for each channel
+
+        # Calculate average mean for the RGB channels
+        mean = sum(mean_rgb) / len(mean_rgb)
+
+        # Calculate average variance across all channels
+        avg_variance = sum(variances.values()) / len(variances)
+
+        # Calculate standard deviation based on the average variance
+        dev = calculate_standard_dev(avg_variance)
+
+    else:
+        print("Calculating variation coefficient for gray image...")
+        mean = calculate_mean(histogram)  # Calculate mean for grayscale
+        variance = calculate_variance(histogram, mean)
+        dev = calculate_standard_dev(variance)
+
+    # Calculate and print the variation coefficient (stdev / mean)
+    calculate_variation_coefficient_1(dev, mean)
