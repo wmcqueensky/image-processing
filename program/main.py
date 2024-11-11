@@ -6,10 +6,12 @@ from functions.geometric import horizontal_flip, vertical_flip, diagonal_flip, s
 from functions.noise_removal import alpha_trimmed_mean_filter, geometric_mean_filter
 from functions.similarity_measures import mean_square_error, peak_mean_square_error, signal_to_noise_ratio, peak_signal_to_noise_ratio, maximum_difference
 from functions.histogram import save_histogram_image, calculate_histogram
-from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb
+from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb, \
+    calculate_asymmetry_coefficient, calculate_asymmetry_coefficient_rgb
 from functions.characteristics import calculate_variance
 from functions.characteristics import calculate_standard_dev
 from functions.characteristics import calculate_variation_coefficient_1
+from functions.improvement import power_2_3_pdf
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -246,6 +248,42 @@ if 'histogram' in args_dict:
     # Call the save_histogram_image function with the correct arguments
     save_histogram_image(pixels, mode, histogram_image_path, channels)
 
+if 'hpower' in args_dict:
+    print('Image improvement!')
+
+    # Calculate the histogram of the image (assuming grayscale or RGB)
+    histogram = calculate_histogram(pixels, mode)
+
+    # Define the g_min and g_max (grayscale 0-255)
+    g_min = 0
+    g_max = 255
+
+    # Calculate N (total number of pixels)
+    N = size[0] * size[1]
+
+    # Iterate over each pixel and apply the transformation
+    for y in range(size[1]):  # Assuming y is the height
+        for x in range(size[0]):  # Assuming x is the width
+            if mode == 'L':  # Grayscale mode
+                f = pixels[x][y]  # Pixel intensity at (x, y)
+                g_f = power_2_3_pdf(histogram[0], g_min, g_max, f, N)  # Apply transformation
+                pixels[x][y] = int(g_f)  # Update the pixel with transformed value
+
+            elif mode == 'RGB':  # RGB mode
+                # Apply transformation to each channel
+                r, g, b = pixels[x][y]
+                r_new = power_2_3_pdf(histogram[0], g_min, g_max, r, N)
+                g_new = power_2_3_pdf(histogram[1], g_min, g_max, g, N)
+                b_new = power_2_3_pdf(histogram[2], g_min, g_max, b, N)
+                pixels[x][y] = (int(r_new), int(g_new), int(b_new))  # Update RGB pixel
+
+    # Save the modified image
+    save_image(pixels, mode, size, 'output_hpower.bmp')
+    print("Improved image saved as 'output_hpower.bmp'")
+
+
+
+
 if 'cmean' in args_dict:
     print("Calculating mean...")
 
@@ -331,3 +369,18 @@ if "cvarcoi" in args_dict:
 
     # Calculate and print the variation coefficient (stdev / mean)
     calculate_variation_coefficient_1(dev, mean)
+
+
+if "casyco" in args_dict:
+
+    if mode == 'RGB':
+        r_histogram, g_histogram, b_histogram = calculate_histogram(pixels, mode)
+        # Compute asymmetry coefficient using the histogram
+        asym_coe = calculate_asymmetry_coefficient_rgb((r_histogram, g_histogram, b_histogram))
+    else:
+        histogram = calculate_histogram(pixels, mode)
+        # Compute asymmetry coefficient using the histogram
+        asym_coe = calculate_asymmetry_coefficient(histogram)
+
+    print("Asymmetry Coefficient:", asym_coe)
+

@@ -73,3 +73,34 @@ def calculate_variation_coefficient_1 (mean, deviation):
     v_c_1 = deviation/mean
     print(f"Variation coefficient 1: {v_c_1}")
     return v_c_1
+
+
+def calculate_asymmetry_coefficient(histogram):
+    """
+    Calculate the asymmetry coefficient `b_S` for a single color channel.
+    """
+    total_pixels = sum(histogram)  # N: total number of pixels
+    mean = calculate_mean(histogram)  # Calculate mean for the channel
+    variance = calculate_variance(histogram, mean)  # Calculate variance for the channel
+    sigma = math.sqrt(variance)  # Standard deviation
+
+    # Asymmetry coefficient calculation
+    b_S = sum((m - mean) ** 3 * histogram[m] for m in range(len(histogram))) / (total_pixels * sigma ** 3)
+    return b_S
+
+
+# Main code to handle RGB images
+def calculate_asymmetry_coefficient_rgb(histograms):
+    """
+    Calculate the asymmetry coefficient for each channel (R, G, B) in an RGB image.
+    histograms: A tuple (r_histogram, g_histogram, b_histogram)
+    """
+    coefficients = {}
+    channel_names = ['Red', 'Green', 'Blue']
+
+    # Calculate the asymmetry coefficient for each channel
+    for i, histogram in enumerate(histograms):
+        b_S = calculate_asymmetry_coefficient(histogram)
+        coefficients[channel_names[i]] = b_S
+
+    return coefficients
