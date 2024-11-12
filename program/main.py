@@ -89,13 +89,12 @@ if 'enlarge' in args_dict:
     size = (new_width, new_height)
     save_image(pixels, mode, size, 'output_enlarge.bmp')  # Save after enlarging
 
-# Apply alpha-trimmed mean filter if specified
 if 'alpha' in args_dict:
     try:
         alpha_value = int(args_dict['alpha'])
         kernel_size = 3  # Default kernel size, can make this configurable
         print(f"Applying alpha-trimmed mean filter with alpha {alpha_value}")
-        pixels = alpha_trimmed_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size, alpha_value)
+        pixels = alpha_trimmed_mean_filter(pixels, size[0], size[1], kernel_size, alpha_value)
         save_image(pixels, mode, size, 'output_alpha.bmp')  # Save
     except ValueError:
         print("Error: Alpha value must be an integer.")
@@ -106,7 +105,7 @@ if 'gmean' in args_dict:
         gmean_value = int(args_dict['gmean'])
         kernel_size = 3  # Default kernel size, can make this configurable
         print(f"Applying geometric mean filter with value {gmean_value}")
-        pixels = geometric_mean_filter(noisy_pixels, size_noisy[0], size_noisy[1], kernel_size)
+        pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
         save_image(pixels, mode, size, 'output_gmean.bmp')  # Save
     except ValueError:
         print("Error: Gmean value must be an integer.")
