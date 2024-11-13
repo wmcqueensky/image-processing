@@ -1,4 +1,6 @@
 import sys
+from PIL import Image
+import numpy as np
 
 from functions.histogram import save_histogram_image, calculate_histogram
 from functions.characteristics import calculate_mean, calculate_mean_rgb, calculate_variance_rgb, \
@@ -7,6 +9,7 @@ from functions.characteristics import calculate_mean, calculate_mean_rgb, calcul
     calculate_entropy_rgb, calculate_entropy
 from functions.characteristics import calculate_variance, calculate_standard_dev, calculate_variation_coefficient_1
 from functions.improvement import power_2_3_pdf
+from functions.linear_filtration import universal_convolution, optimized_convolution_detail_extraction
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -206,6 +209,51 @@ if "centropy" in args_dict:
         entropy_values = calculate_entropy(histogram)
 
     print(f"Entropy value: ${entropy_values}")
+    
+if 'sexdeti_universal' in args_dict:
+    print("Performing detail extraction using universal convolution for a custom or predefined mask...")
+    
+    # Retrieve custom mask if provided; otherwise, use one of the predefined masks
+    if 'custom_mask' in args_dict:
+        # Parse the custom mask, assuming it's provided as a comma-separated string, e.g., "1,0,-1,0,1,0,-1,0,1"
+        try:
+            mask_values = list(map(int, args_dict['custom_mask'].split(',')))
+            if len(mask_values) != 9:
+                raise ValueError("Custom mask must contain exactly 9 values.")
+            mask = np.array(mask_values).reshape((3, 3))
+        except ValueError as e:
+            print(f"Invalid custom mask format: {e}")
+            sys.exit(1)
+    else:
+        # If no custom mask is provided, use one of the standard filters (N, NE, E, SE)
+        filter_type = args_dict.get('filter', 'N')  # Default to N filter if not specified
+        filters = {
+            "N": np.array([[ 1,  1,  1],
+                           [-1, -2, -1],
+                           [ 1,  1,  1]]),
+            "NE": np.array([[ 1, -1, -1],
+                            [-1, -2, -1],
+                            [ 1,  1,  1]]),
+            "E": np.array([[-1, -1, -1],
+                           [ 1, -2,  1],
+                           [ 1,  1,  1]]),
+            "SE": np.array([[-1, -1, -1],
+                            [ 1, -2,  1],
+                            [ 1,  1,  1]])
+        }
+        mask = filters.get(filter_type)
+        if mask is None:
+            print(f"Invalid filter type '{filter_type}' provided. Please choose from N, NE, E, SE, or provide a custom mask.")
+            sys.exit(1)
 
+    # Apply universal convolution with the selected or custom mask
+    output_pixels = universal_convolution(pixels, size, mask)
+    save_image(output_pixels, mode, size, output_image_path)
+    print(f"Detail extraction with universal convolution completed and saved with {filter_type if 'custom_mask' not in args_dict else 'custom'} mask.")
 
-#if "sexdeti" in args_dict:
+if 'sexdeti' in args_dict:
+    print("Performing optimized detail extraction using predefined masks (N, NE, E, SE)...")
+    filter_type = args_dict.get('filter', 'N')  # Default to N filter if not specified
+    output_pixels = optimized_convolution_detail_extraction(pixels, size, filter_type)
+    save_image(output_pixels, mode, size, output_image_path)
+    print(f"Detail extraction with optimized convolution and {filter_type} filter completed and saved.")
