@@ -81,26 +81,49 @@ if 'enlarge' in args_dict:
     size = (new_width, new_height)
     save_image(pixels, mode, size, 'output_enlarge.bmp')  # Save after enlarging
 
+# Apply alpha-trimmed mean filter if specified
 if 'alpha' in args_dict:
     try:
         alpha_value = int(args_dict['alpha'])
-        kernel_size = 3  # Default kernel size, can make this configurable
-        print(f"Applying alpha-trimmed mean filter with alpha {alpha_value}")
+
+        # Retrieve kernel size from args_dict if provided, otherwise default to 3
+        kernel_size = int(args_dict.get('kernel_size', 3))  # Default to 3 if 'kernel_size' is not specified
+
+        # Ensure kernel_size is odd, as it’s typically required for symmetric filters
+        if kernel_size % 2 == 0:
+            raise ValueError("Kernel size must be an odd integer.")
+
+        print(f"Applying alpha-trimmed mean filter with alpha {alpha_value} and kernel size {kernel_size}")
+
+        # Apply the alpha-trimmed mean filter
         pixels = alpha_trimmed_mean_filter(pixels, size[0], size[1], kernel_size, alpha_value)
-        save_image(pixels, mode, size, 'output_alpha.bmp')  # Save
-    except ValueError:
-        print("Error: Alpha value must be an integer.")
+
+        # Save the output image
+        save_image(pixels, mode, size, 'output_alpha.bmp')
+    except ValueError as e:
+        print(f"Error: {e}")
 
 # Apply geometric mean filter if specified
 if 'gmean' in args_dict:
     try:
         gmean_value = int(args_dict['gmean'])
-        kernel_size = 3  # Default kernel size, can make this configurable
-        print(f"Applying geometric mean filter with value {gmean_value}")
+
+        # Retrieve the kernel size from args_dict if provided, otherwise default to 3
+        kernel_size = int(args_dict.get('kernel_size', 3))  # Use 'kernel_size' from args_dict or default to 3
+
+        # Ensure kernel_size is odd (commonly required for filters)
+        if kernel_size % 2 == 0:
+            raise ValueError("Kernel size must be an odd integer.")
+
+        print(f"Applying geometric mean filter with gmean value {gmean_value} and kernel size {kernel_size}")
+
+        # Apply the filter
         pixels = geometric_mean_filter(pixels, size[0], size[1], kernel_size)
-        save_image(pixels, mode, size, 'output_gmean.bmp')  # Save
-    except ValueError:
-        print("Error: Gmean value must be an integer.")
+
+        # Save the output image
+        save_image(pixels, mode, size, 'output_gmean.bmp')
+    except ValueError as e:
+        print(f"Error: {e}")
 
 # Perform MSE calculation if specified
 if 'mse' in args_dict:
