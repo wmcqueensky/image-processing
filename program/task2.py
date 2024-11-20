@@ -9,7 +9,7 @@ from functions.characteristics import calculate_mean, calculate_mean_rgb, calcul
     calculate_entropy_rgb, calculate_entropy
 from functions.characteristics import calculate_variance, calculate_standard_dev, calculate_variation_coefficient_1
 from functions.improvement import power_2_3_pdf
-from functions.linear_filtration import optimized_convolution_fixed_filter, universal_convolution
+from functions.linear_filtration import optimized_convolution, universal_convolution
 from functions.non_linear_filtration import apply_roberts_operator
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
@@ -224,7 +224,7 @@ if 'sexdeti_universal' in args_dict:
         
 if 'sexdeti' in args_dict:
     print("Performing optimized detail extraction using N mask")
-    output_pixels = optimized_convolution_fixed_filter(pixels, size)
+    output_pixels = optimized_convolution(pixels, size)
     save_image(output_pixels, mode, size, output_image_path)
     print(f"Detail extraction with optimized convolution and N filter completed and saved.")
 

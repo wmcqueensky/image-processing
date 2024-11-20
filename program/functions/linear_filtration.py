@@ -85,12 +85,12 @@ def universal_convolution(pixels, size, args_dict):
     
     return output_pixels
 
-def optimized_convolution_fixed_filter(pixels, size):
+def optimized_convolution(pixels, size):
     """Optimized convolution for a fixed detail extraction filter (N) using vectorized NumPy operations."""
     # Define the specific filter (hard-coded to "N")
-    mask = np.array([[ 1,  1,  1],
-                     [-1, -2, -1],
-                     [ 1,  1,  1]])
+    mask = np.array([[  1,  1,  1],
+                     [  1, -2,  1],
+                     [-1, -1, -1]])
     
     # Check if the image is RGB or Grayscale and reshape accordingly
     is_rgb = isinstance(pixels[0], tuple)
