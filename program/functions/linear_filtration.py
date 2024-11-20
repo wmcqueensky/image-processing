@@ -26,18 +26,22 @@ def universal_convolution(pixels, size, args_dict):
         # Use one of the standard filters (N, NE, E, SE)
         filter_type = args_dict.get('filter', 'N')  # Default to N filter if not specified
         filters = {
-            "N": np.array([[ 1,  1,  1],
-                           [-1, -2, -1],
-                           [ 1,  1,  1]]),
-            "NE": np.array([[ 1, -1, -1],
-                            [-1, -2, -1],
-                            [ 1,  1,  1]]),
-            "E": np.array([[-1, -1, -1],
-                           [ 1, -2,  1],
-                           [ 1,  1,  1]]),
-            "SE": np.array([[-1, -1, -1],
-                            [ 1, -2,  1],
-                            [ 1,  1,  1]])
+            "N": np.array([
+                [  1,  1,  1],
+                [  1, -2,  1],
+                [-1, -1, -1]]),
+            "NE": np.array([
+                [  1,  1,  1],
+                [-1, -2,  1],
+                [-1, -1,  1]]),
+            "E": np.array([
+                [-1,  1,  1],
+                [-1, -2,  1],
+                [-1,  1,  1]]),
+            "SE": np.array([
+                [-1, -1,  1],
+                [-1, -2,  1],
+                [  1,  1,  1]])
         }
         mask = filters.get(filter_type)
         if mask is None:
@@ -80,8 +84,6 @@ def universal_convolution(pixels, size, args_dict):
         output_pixels = [tuple(output_pixels[i:i+3]) for i in range(0, len(output_pixels), 3)]
     
     return output_pixels
-
-import numpy as np
 
 def optimized_convolution_fixed_filter(pixels, size):
     """Optimized convolution for a fixed detail extraction filter (N) using vectorized NumPy operations."""
