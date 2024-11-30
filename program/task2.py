@@ -12,7 +12,8 @@ from functions.characteristics import (
 )
 from functions.characteristics import calculate_variance, calculate_standard_dev, calculate_variation_coefficient_1
 from functions.improvement import power_2_3_pdf
-from functions.linear_filtration import universal_convolution, optimized_convolution_detail_extraction
+from functions.linear_filtration import universal_convolution, optimized_convolution_detail_extraction, \
+    optimized_convolution
 from functions.non_linear_filtration import apply_roberts_operator
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
