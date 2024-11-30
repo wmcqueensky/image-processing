@@ -100,6 +100,7 @@ if 'alpha' in args_dict:
 
         # Save the output image
         save_image(pixels, mode, size, 'output_alpha.bmp')
+
     except ValueError as e:
         print(f"Error: {e}")
 

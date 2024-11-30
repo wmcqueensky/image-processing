@@ -17,6 +17,7 @@ def adjust_contrast(pixels, factor):
     midpoint = 128
     new_pixels = []
     for pixel in pixels:
+        print(pixel)
         if isinstance(pixel, int):  # Grayscale image
             new_pixel = int((pixel - midpoint) * factor + midpoint)
             new_pixels.append(max(0, min(255, new_pixel)))

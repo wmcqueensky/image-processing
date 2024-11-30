@@ -6,10 +6,12 @@ def power_2_3_pdf(histogram, g_min, g_max, f, N):
     if not isinstance(histogram, list):
         raise ValueError("Expected histogram to be a list of values")
 
-    # Compute cumulative histogram sum up to f
-    cumulative_sum = sum(histogram[:f + 1])  # Sum H(m) from 0 to f
+    #cumulative histogram sum up to f
+    cumulative_sum = 0
+    for m in range(f + 1):  # Iterate from 0 to f
+        cumulative_sum += histogram[m]
 
-    # Normalize by dividing by N (total number of pixels)
+
     normalized_cumulative_sum = cumulative_sum / N
 
     # Cube roots of g_min and g_max

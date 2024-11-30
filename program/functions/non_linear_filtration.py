@@ -1,5 +1,6 @@
 def apply_roberts_operator(pixels, size):
     """Applies Roberts II operator to an image in the spatial domain for edge detection."""
+    # CZY TUTAJ NIE TRZBEA JAKIEGOŚ KERNELA ZEBY TO BYLO 2x2, COŚ WSPOMINAŁ NA ZAJĘCIACH
     width, height = size
     new_pixels = []
     

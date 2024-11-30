@@ -33,9 +33,9 @@ def save_histogram_image(image_pixels, mode, output_path="histogram.png", channe
     """
     Given the image pixels and mode, calculate the histogram and save it as an image.
     """
-    # Create an empty white image (for the histogram plot)
-    width = 256  # The histogram image will have 256 pixels width
-    height = 200  # You can adjust the height depending on the histogram's scaling
+
+    width = 256
+    height = 200
     image = Image.new("RGB", (width, height), (255, 255, 255))  # White background
     pixel_data = image.load()
 
