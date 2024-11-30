@@ -1,7 +1,6 @@
 import sys
 from PIL import Image
 import numpy as np
-import os
 
 from functions.histogram import save_histogram_image, calculate_histogram
 from functions.characteristics import (
@@ -94,12 +93,15 @@ if 'hpower' in args_dict:
     for y in range(size[1]):
         for x in range(size[0]):
             index = y * size[0] + x
-            if mode == 'L':  # Grayscale
+
+            if mode == 'L':  # Grayscale image
                 f = pixels[index]
-                g_f = power_2_3_pdf(histogram, g_min, g_max, f, N)
+                g_f = power_2_3_pdf(histogram, g_min, g_max, f, N)  # Pass grayscale histogram directly
                 pixels[index] = int(g_f)
-            elif mode == 'RGB':  # RGB
+
+            elif mode == 'RGB':  # RGB image
                 r, g, b = pixels[index]
+                # Pass each channel histogram separately
                 r_new = power_2_3_pdf(histogram[0], g_min, g_max, r, N)
                 g_new = power_2_3_pdf(histogram[1], g_min, g_max, g, N)
                 b_new = power_2_3_pdf(histogram[2], g_min, g_max, b, N)
@@ -185,13 +187,24 @@ if "centropy" in args_dict:
 
 # ========== IMAGE PROCESSING ========== #
 if 'sexdeti_universal' in args_dict:
-    print("Performing detail extraction using universal convolution...")
+    print("Performing detail extraction using universal convolution for a custom or predefined mask...")
+    try:
+        output_pixels = universal_convolution(pixels, size, args_dict)
+        save_image(output_pixels, mode, size, output_image_path)
+        filter_type = args_dict.get('filter', 'custom')
+        print(f"Detail extraction with universal convolution completed and saved with {filter_type} mask.")
+    except ValueError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 if 'sexdeti' in args_dict:
-    print("Performing optimized detail extraction...")
+    print("Performing optimized detail extraction using N mask")
+    output_pixels = optimized_convolution(pixels, size)
+    save_image(output_pixels, mode, size, output_image_path)
+    print(f"Detail extraction with optimized convolution and N filter completed and saved.")
 
 if 'orobertsii' in args_dict:
-    print("Applying Roberts II operator...")
+    print("Applying Roberts II operator for edge detection...")
     pixels = apply_roberts_operator(pixels, size)
     save_image(pixels, mode, size, output_image_path)
     print(f"Edge-detected image saved as '{output_image_path}'")
