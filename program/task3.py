@@ -6,7 +6,7 @@ from utils.help import print_help
 from utils.parse_arguments import parse_arguments
 from functions.morphological import dilation, erosion, closing, \
     opening  # Import the dilate function from morphological.py
-
+from functions.segmentation import region_growing
 # ==============================
 # TASK 3 SCRIPT
 # ==============================
@@ -169,6 +169,46 @@ elif 'closing' in args_dict:
     print("Closed binary array:")
     print(closed_image)
 
+    # Flatten the closed image before saving
+    flattened_pixels = closed_image.flatten()  # Convert the 2D numpy array to a 1D array
+
+    # Save the result
+    save_image(flattened_pixels, '1', size, output_image_path)  # Save as binary (1-bit)
+    print(f"Closed image saved as '{output_image_path}'")
+    
+elif 'region_growing' in args_dict:
+    print("Performing region growing segmentation...")
+
+    # Convert the image to grayscale and get the pixels as a flat list
+    gray_image = im.convert('L')
+    pixels = list(gray_image.getdata())
+
+    # Parse the seeds and threshold from arguments
+    seeds = args_dict.get('seeds', '0,0').split(';')
+    seeds = [tuple(map(int, seed.split(','))) for seed in seeds]
+    threshold = int(args_dict.get('threshold', 10))
+    connectivity = int(args_dict.get('connectivity', 4))
+
+    # Perform region growing using the new function (which expects a 1D list)
+    segmented_pixels = region_growing(pixels, size, seeds, threshold, connectivity)
+
+    # Save the segmented result as an image
+    save_image(segmented_pixels, 'L', size, output_image_path)  # Save as grayscale ('L')
+    print(f"Segmented image saved as '{output_image_path}'")
+
+    # Convert the segmented pixels back to a 2D numpy array for morphological operations
+    original_array = np.array(segmented_pixels).reshape(size[1], size[0])
+
+    # Define a simple structuring element (3x3 square)
+    structuring_element = np.array([
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+    ])
+
+    # Apply closing
+    closed_image = closing(original_array, structuring_element)
+    
     # Flatten the closed image before saving
     flattened_pixels = closed_image.flatten()  # Convert the 2D numpy array to a 1D array
 
