@@ -5,7 +5,7 @@ from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
 from functions.morphological import dilation, erosion, closing, \
-    opening, hitOrMiss  # Import the dilate function from morphological.py
+    opening, hitOrMiss, iterative_dilation  # Import the dilate function from morphological.py
 from functions.segmentation import region_growing
 # ==============================
 # TASK 3 SCRIPT
@@ -228,65 +228,124 @@ elif 'hit-or-miss' in args_dict:
         print("The image is not binary (1-bit). Please provide a binary image.")
         sys.exit(1)
 
-    # Foreground-only structuring elements (xi)
-    foreground_structuring_elements = [
-        np.array([[1, -1, -1],
-                  [1, 0, -1],
-                  [1, -1, -1]]),
+    # (xi)
+    structuring_element1 = np.array([
+            [1, -1, -1],
+            [1, 0, -1],
+            [1, -1, -1]])
+    structuring_element2 = np.array(
+                [[1, 1, 1],
+                [-1, 0, -1],
+                [-1, -1, -1]])
 
-        np.array([[1, 1, 1],
-                  [-1, 0, -1],
-                  [-1, -1, -1]]),
+    structuring_element3 = np.array([
+                [-1, -1, 1],
+                [-1, 0, 1],
+                [-1, -1, 1]])
 
-        np.array([[-1, -1, 1],
-                  [-1, 0, 1],
-                  [-1, -1, 1]]),
+    structuring_element4 = np.array([
+                [-1, -1, -1],
+                [-1, 0, -1],
+                [1, 1, 1]]),
+    # xii
 
-        np.array([[-1, -1, -1],
-                  [-1, 0, -1],
-                  [1, 1, 1]]),
-    ]
+    structuring_element5 = np.array([
+                    [0, 0, 0],
+                    [-1, 1, -1],
+                    [1, 1, 1]])
 
-    # Foreground and Background structuring elements (xii)
-    foreground_background_structuring_elements = [
-        (
-            np.array([[0, 0, 0],
-                      [-1, 1, -1],
-                      [1, 1, 1]]),  # Foreground
+    structuring_element6 = np.array([
+                    [1, 1, 1],
+                    [-1, 0, -1],
+                    [0, 0, 0]])
 
-            np.array([[1, 1, 1],
-                      [-1, 1, -1],
-                      [0, 0, 0]])       # Background
-        ),
-        (
-            np.array([[-1, 0, 0],
-                      [1, 1, 0],
-                      [1, 1, -1]]),  # Foreground
+    structuring_element7 = np.array([
+                    [0, 0, 0],
+                    [-1, 0, -1],
+                    [1, 1, 1]])
 
-            np.array([[-1, 1, 1],
-                      [0, 1, 1],
-                      [0, 0, -1]])       # Background
-        ),
-        # Add more foreground-background pairs as needed
-    ]
+    structuring_element8 = np.array([
+                    [-1, 0, 0],
+                    [1, 1, 0],
+                    [1, 1, -1]])
 
-    # Initialize an empty result image
-    final_hit_or_miss_result = np.zeros_like(original_array)
+    structuring_element9 = np.array([
+                    [1, -1, 0],
+                    [1, 1, 0],
+                    [1, -1, 0]])
 
-    # Apply (xi): Foreground-only kernels
-    for foreground_kernel in foreground_structuring_elements:
-        hit_or_miss_result = hitOrMiss(original_array, foreground_kernel)
-        final_hit_or_miss_result = np.logical_or(final_hit_or_miss_result, hit_or_miss_result)
+    structuring_element10 = np.array([
+                    [0, -1, 1],
+                    [0, 1, 1 ],
+                    [0, -1, 1]])
 
-    # Apply (xii): Foreground and Background kernels
-    for foreground_kernel, background_kernel in foreground_background_structuring_elements:
-        hit_or_miss_result = hitOrMiss(original_array, foreground_kernel, background_kernel)
-        final_hit_or_miss_result = np.logical_or(final_hit_or_miss_result, hit_or_miss_result)
+    structuring_element11 = np.array([
+                    [1, 1, -1],
+                    [1, 1, 0],
+                    [-1, 0, 0]])
+
+    structuring_element12 = np.array([
+                    [0, 0, -1],
+                    [0, 1, 1],
+                    [-1, 1, 1]])
+
+
+    background_kernel1 = np.array([
+                    [0, 0, -1],
+                    [0, 1, 1],
+                    [0, 1, 1]])
+
+    # Call the hitOrMiss function
+    final_hit_or_miss_result = hitOrMiss(original_array, structuring_element2, structuring_element5)
+
+    print("Final Hit-or-Miss Result:")
+    print(final_hit_or_miss_result)
+
+    # Save the result
+    save_image(
+        final_hit_or_miss_result.flatten(),  # Convert 2D numpy array to 1D
+        '1',  # Save as binary (1-bit)
+        size,  # Image size
+        output_image_path  # Output file path
+    )
+    print(f"Hit-or-Miss image saved as '{output_image_path}'")
+
+elif 'm3' in args_dict:
+    print("Performing iterative dilation on the binary image...")
+
+    # Ensure the image is binary (1-bit)
+    if mode != '1':  # Check if the image is binary (1-bit)
+        print("The image is not binary (1-bit). Please provide a binary image.")
+        sys.exit(1)
+
+    # Convert the image to a numpy array
+    original_array = np.array(im)
+    print("Original image array:")
+    print(original_array)
+
+    # Parse the starting point p from the arguments (e.g., 'p=x,y')
+    p_str = args_dict.get('p', '2,2')  # Default to (0, 0) if not provided
+    p = tuple(map(int, p_str.split(',')))  # Convert the string to a tuple (x, y)
+
+    print(f"Starting point p: {p}")
+
+    # Define a simple structuring element (3x3 square)
+    structuring_element = np.array([
+        [1, 1, 1],
+        [1, 1, 1],
+        [1, 1, 1],
+    ])
+
+    # Perform iterative dilation starting from point p
+    final_result = iterative_dilation(original_array, p, structuring_element)
+
+    # Debugging: Print the final result of iterative dilation
+    print("Final iterative dilation result:")
+    print(final_result)
 
     # Flatten the result before saving
-    flattened_pixels = final_hit_or_miss_result.flatten()  # Convert the 2D numpy array to a 1D array
+    flattened_pixels = final_result.flatten()  # Convert the 2D numpy array to a 1D array
 
     # Save the result
     save_image(flattened_pixels, '1', size, output_image_path)  # Save as binary (1-bit)
-    print(f"Hit-or-Miss image saved as '{output_image_path}'")
-
+    print(f"Iterative dilation image saved as '{output_image_path}'")
