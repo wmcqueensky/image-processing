@@ -5,7 +5,7 @@ from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
 from functions.morphological import dilation, erosion, closing, \
-    opening  # Import the dilate function from morphological.py
+    opening, hitOrMiss  # Import the dilate function from morphological.py
 
 # ==============================
 # TASK 3 SCRIPT
@@ -175,3 +175,78 @@ elif 'closing' in args_dict:
     # Save the result
     save_image(flattened_pixels, '1', size, output_image_path)  # Save as binary (1-bit)
     print(f"Closed image saved as '{output_image_path}'")
+
+elif 'hit-or-miss' in args_dict:
+    print("Performing hit-or-miss transform on the binary image...")
+
+    original_array = np.array(im)
+    print("Original image array:")
+    print(original_array)
+
+    # Ensure the image is binary (1-bit)
+    if mode != '1':  # Check if the image is binary (1-bit)
+        print("The image is not binary (1-bit). Please provide a binary image.")
+        sys.exit(1)
+
+    # Foreground-only structuring elements (xi)
+    foreground_structuring_elements = [
+        np.array([[1, -1, -1],
+                  [1, 0, -1],
+                  [1, -1, -1]]),
+
+        np.array([[1, 1, 1],
+                  [-1, 0, -1],
+                  [-1, -1, -1]]),
+
+        np.array([[-1, -1, 1],
+                  [-1, 0, 1],
+                  [-1, -1, 1]]),
+
+        np.array([[-1, -1, -1],
+                  [-1, 0, -1],
+                  [1, 1, 1]]),
+    ]
+
+    # Foreground and Background structuring elements (xii)
+    foreground_background_structuring_elements = [
+        (
+            np.array([[0, 0, 0],
+                      [-1, 1, -1],
+                      [1, 1, 1]]),  # Foreground
+
+            np.array([[1, 1, 1],
+                      [-1, 1, -1],
+                      [0, 0, 0]])       # Background
+        ),
+        (
+            np.array([[-1, 0, 0],
+                      [1, 1, 0],
+                      [1, 1, -1]]),  # Foreground
+
+            np.array([[-1, 1, 1],
+                      [0, 1, 1],
+                      [0, 0, -1]])       # Background
+        ),
+        # Add more foreground-background pairs as needed
+    ]
+
+    # Initialize an empty result image
+    final_hit_or_miss_result = np.zeros_like(original_array)
+
+    # Apply (xi): Foreground-only kernels
+    for foreground_kernel in foreground_structuring_elements:
+        hit_or_miss_result = hitOrMiss(original_array, foreground_kernel)
+        final_hit_or_miss_result = np.logical_or(final_hit_or_miss_result, hit_or_miss_result)
+
+    # Apply (xii): Foreground and Background kernels
+    for foreground_kernel, background_kernel in foreground_background_structuring_elements:
+        hit_or_miss_result = hitOrMiss(original_array, foreground_kernel, background_kernel)
+        final_hit_or_miss_result = np.logical_or(final_hit_or_miss_result, hit_or_miss_result)
+
+    # Flatten the result before saving
+    flattened_pixels = final_hit_or_miss_result.flatten()  # Convert the 2D numpy array to a 1D array
+
+    # Save the result
+    save_image(flattened_pixels, '1', size, output_image_path)  # Save as binary (1-bit)
+    print(f"Hit-or-Miss image saved as '{output_image_path}'")
+

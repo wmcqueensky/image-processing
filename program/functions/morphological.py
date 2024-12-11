@@ -42,8 +42,8 @@ def erosion(image, kernel):
     pad_h = kernel_h // 2
     pad_w = kernel_w // 2
 
-    # Pad the input image
-    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=1)  # pad with 1s (white)
+    # Pad the input image CHECK HERE IF TUPLES ARE NEEDED
+    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=1)  # pad with 0s (black)
 
     # Prepare the output image
     output_image = np.ones_like(image)  # Start with all pixels as 1 (white)
@@ -85,3 +85,35 @@ def closing(image, kernel):
     closed_image = erosion(dilated_image, kernel)
 
     return closed_image
+
+
+def hitOrMiss(image, foreground_kernel, background_kernel=None):
+    """
+    Perform the hit-or-miss transform on a binary image.
+    """
+
+    # Erode the image with the foreground kernel (this matches foreground pixels)
+    eroded_foreground = erosion(image, foreground_kernel)
+    print("Eroded Foreground")
+    print(eroded_foreground)
+
+    if background_kernel is not None:
+        # Invert the image for the background kernel (background becomes foreground)
+        print("Original image")
+        print(image)
+        inverted_image = np.logical_not(image)
+        print("inverted image:")
+        print(inverted_image)
+        # Erode the inverted image with the background kernel (this matches background pixels)
+        eroded_background = erosion(inverted_image, background_kernel)
+        print("Eroded Background")
+        print(eroded_background)
+        # Combine the results using logical AND
+        result = np.logical_and(eroded_foreground, eroded_background)
+        print("Result:")
+        print(result)
+    else:
+        # If no background kernel is provided, use only the foreground erosion
+        result = eroded_foreground
+
+    return result.astype(np.uint8)  # Return as uint8 (binary)
