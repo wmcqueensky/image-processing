@@ -5,7 +5,7 @@ from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
 from functions.morphological import dilation, erosion, closing, \
-    opening, hitOrMiss, iterative_dilation  # Import the dilate function from morphological.py
+    opening, hitOrMiss, iterative_dilation
 from functions.segmentation import region_growing
 # ==============================
 # TASK 3 SCRIPT
@@ -148,7 +148,7 @@ elif 'closing' in args_dict:
 
     # Ensure the image is binary (1-bit)
     if mode == '1':  # Check if the image is binary (1-bit)
-        binary_array = np.array(im)  # This already has values of True (white) and False (black)
+        binary_array = np.array(im)
         print("Binary array:")
         print(binary_array)
     else:
@@ -339,7 +339,7 @@ elif 'm3' in args_dict:
     # Perform iterative dilation starting from point p
     final_result = iterative_dilation(original_array, p, structuring_element)
 
-    # Debugging: Print the final result of iterative dilation
+    # Print the final result of iterative dilation
     print("Final iterative dilation result:")
     print(final_result)
 

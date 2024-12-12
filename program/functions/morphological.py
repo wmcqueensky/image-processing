@@ -22,6 +22,7 @@ def dilation(image, kernel):
         for j in range(image_w):
             # Extract the region of interest
             region = padded_image[i:i + kernel_h, j:j + kernel_w]
+
             # Check if any non-`-1` kernel position overlaps with the region
             match = False
             for m in range(kernel_h):
@@ -44,8 +45,6 @@ def erosion(image, kernel):
     # Get dimensions of image and kernel
     image_h, image_w = image.shape
 
-    print('kernel')
-    print(kernel)
     kernel_h, kernel_w = kernel.shape
 
     # Calculate padding
@@ -63,6 +62,7 @@ def erosion(image, kernel):
         for j in range(image_w):
             # Extract the region of interest
             region = padded_image[i:i + kernel_h, j:j + kernel_w]
+
             # Check if all non-`-1` kernel positions match the region
             match = True
             for m in range(kernel_h):
@@ -121,10 +121,12 @@ def hitOrMiss(image, foreground_kernel, background_kernel=None):
         inverted_image = np.logical_not(image)
         print("inverted image:")
         print(inverted_image)
+
         # Erode the inverted image with the background kernel (this matches background pixels)
         eroded_background = erosion(inverted_image, background_kernel)
         print("Eroded Background")
         print(eroded_background)
+
         # Combine the results using logical AND
         result = np.logical_and(eroded_foreground, eroded_background)
         print("Result:")
@@ -156,7 +158,7 @@ def iterative_dilation(image, p, kernel):
     while True:
         # Dilate the current set X_k with the kernel
         X_k_next = dilation(X_k, kernel)
-        print('X_k_next')
+        print('X_k_next before intersect')
         print(X_k_next)
 
         # Intersect with the original image A (this is equivalent to X_k = (X_k ⊕ B) ∩ A)
