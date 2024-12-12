@@ -192,29 +192,18 @@ elif 'region_growing' in args_dict:
     # Perform region growing using the new function (which expects a 1D list)
     segmented_pixels = region_growing(pixels, size, seeds, threshold, connectivity)
 
+    # Normalize the output labels to 0-255 for visualization
+    max_label = max(segmented_pixels)
+    if max_label > 0:
+        segmented_pixels = [int((pixel / max_label) * 255) for pixel in segmented_pixels]
+    else:
+        print("Warning: No regions found. The result might be empty.")
+
     # Save the segmented result as an image
     save_image(segmented_pixels, 'L', size, output_image_path)  # Save as grayscale ('L')
     print(f"Segmented image saved as '{output_image_path}'")
 
-    # Convert the segmented pixels back to a 2D numpy array for morphological operations
-    original_array = np.array(segmented_pixels).reshape(size[1], size[0])
 
-    # Define a simple structuring element (3x3 square)
-    structuring_element = np.array([
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
-    ])
-
-    # Apply closing
-    closed_image = closing(original_array, structuring_element)
-
-    # Flatten the closed image before saving
-    flattened_pixels = closed_image.flatten()  # Convert the 2D numpy array to a 1D array
-
-    # Save the result
-    save_image(flattened_pixels, '1', size, output_image_path)  # Save as binary (1-bit)
-    print(f"Closed image saved as '{output_image_path}'")
 
 elif 'hit-or-miss' in args_dict:
     print("Performing hit-or-miss transform on the binary image...")
