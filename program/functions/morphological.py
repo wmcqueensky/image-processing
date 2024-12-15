@@ -1,4 +1,5 @@
 import numpy as np
+
 def dilation(image, kernel):
     """
     Perform the dilation operation on a binary image, handling `-1` in the kernel.
@@ -27,7 +28,7 @@ def dilation(image, kernel):
             match = False
             for m in range(kernel_h):
                 for n in range(kernel_w):
-                    if kernel[m, n] != -1 and region[m, n] == 1 and kernel[m, n] == 1:
+                    if region[m, n] == 1 and kernel[m, n] == 1:
                         match = True
                         break
                 if match:
@@ -67,7 +68,7 @@ def erosion(image, kernel):
             match = True
             for m in range(kernel_h):
                 for n in range(kernel_w):
-                    if kernel[m, n] != -1 and kernel[m, n] != region[m, n]:
+                    if kernel[m, n] == 1 and region[m, n] != 1:
                         match = False
                         break
                 if not match:
@@ -135,7 +136,7 @@ def hitOrMiss(image, foreground_kernel, background_kernel=None):
         # If no background kernel is provided, use only the foreground erosion
         result = eroded_foreground
 
-    return result.astype(np.uint8)  # Return as uint8 (binary)
+    return result.astype(np.uint8)
 
 
 
@@ -173,3 +174,4 @@ def iterative_dilation(image, p, kernel):
         X_k = X_k_next
 
     return X_k
+

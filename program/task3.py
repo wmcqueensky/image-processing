@@ -46,7 +46,7 @@ if 'dilation' in args_dict:
     # Define a simple structuring element (3x3 square)
     structuring_element = np.array([
         [0, 1, 0],
-        [1, 1, 1],
+        [0, 1, 0],
         [0, 1, 0],
     ])
 
@@ -83,9 +83,9 @@ elif 'erosion' in args_dict:
 
     # Define a simple structuring element (3x3 square)
     structuring_element = np.array([
+        [0, 1, 0],
         [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
+        [0, 1, 0],
     ])
 
     # Apply erosion
@@ -157,9 +157,9 @@ elif 'closing' in args_dict:
 
     # Define a simple structuring element (3x3 square)
     structuring_element = np.array([
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1],
+        [0, 1, 0],
+        [0, 1, 0],
+        [0, 1, 0],
     ])
 
     # Apply closing
@@ -295,8 +295,17 @@ elif 'hit-or-miss' in args_dict:
                     [0, 1, 1],
                     [0, 1, 1]])
 
+    kernel1 = np.array([
+                    [0, 1, 1],
+                    [0, 0, 1],
+                    [0, 0, 1]])
+
+    kernel2 = np.array([
+                    [1, 0, 0],
+                    [1, 1, 0],
+                    [1, 1, 0]])
     # Call the hitOrMiss function
-    final_hit_or_miss_result = hitOrMiss(original_array, structuring_element2, structuring_element5)
+    final_hit_or_miss_result = hitOrMiss(original_array, kernel1, kernel2)
 
     print("Final Hit-or-Miss Result:")
     print(final_hit_or_miss_result)
