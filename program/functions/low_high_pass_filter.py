@@ -1,5 +1,6 @@
 import numpy as np
 from utils.file_operations import save_image
+from functions.fourier import save_magnitude_spectrum
 
 def apply_low_pass_filter(frequency_data, cutoff_frequency):
     """
@@ -82,7 +83,8 @@ def process_and_save_filtered(frequency_data, size, mode, output_base_path, filt
         output_base_path: Base path for saving output images.
         filter_type: Type of filter applied ('lowpass' or 'highpass').
     """
-    width, height = size
+    # Save the magnitude spectrum for the filtered frequency data
+    save_magnitude_spectrum(frequency_data, size, mode, output_base_path)
 
     # Apply Inverse Fourier Transform to each channel
     inverse_channels = [np.fft.ifft2(np.fft.ifftshift(channel)) for channel in frequency_data]
