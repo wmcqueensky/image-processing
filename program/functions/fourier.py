@@ -76,6 +76,55 @@ def compute_frequency_data(input_pixels, size, mode, use_fast=True):
 
     return frequency_data
 
+def save_magnitude_spectrum(frequency_data, size, mode, output_base_path):
+    """
+    Compute and save the magnitude spectrum of the Fourier Transformed image.
+    
+    Args:
+        frequency_data: Frequency domain data of the image (result of Fourier transform).
+        size: Tuple (width, height) of the image.
+        mode: Image mode ('L' for grayscale, 'RGB' for color).
+        output_base_path: Base path for saving the magnitude spectrum images.
+    """
+    # Center the zero-frequency component
+    frequency_data_shifted = [np.fft.fftshift(frequency) for frequency in frequency_data]
+
+    if mode == 'RGB':
+        # Compute magnitude for each channel (R, G, B)
+        magnitude_spectrum_r = np.log(1 + np.abs(frequency_data_shifted[0]))  # Red channel
+        magnitude_spectrum_g = np.log(1 + np.abs(frequency_data_shifted[1]))  # Green channel
+        magnitude_spectrum_b = np.log(1 + np.abs(frequency_data_shifted[2]))  # Blue channel
+        
+        # Normalize and convert each channel to uint8
+        magnitude_r = (magnitude_spectrum_r / magnitude_spectrum_r.max() * 255).astype(np.uint8)
+        magnitude_g = (magnitude_spectrum_g / magnitude_spectrum_g.max() * 255).astype(np.uint8)
+        magnitude_b = (magnitude_spectrum_b / magnitude_spectrum_b.max() * 255).astype(np.uint8)
+        
+        # Stack the magnitude spectra of R, G, B channels into a single image
+        magnitude_image = np.stack([magnitude_r, magnitude_g, magnitude_b], axis=-1)
+
+        # Convert the magnitude image to a list of tuples for RGB format
+        magnitude_image = [tuple(pixel) for pixel in magnitude_image.reshape(-1, 3)]
+
+        # Save the magnitude spectrum image for RGB
+        magnitude_output_path = f"{output_base_path}_fourier_rgb.bmp"
+        save_image(magnitude_image, 'RGB', size, magnitude_output_path)
+        print(f"Magnitude spectrum for RGB saved to '{magnitude_output_path}'.")
+
+    else:
+        # For grayscale, just use the first channel (since there's only one channel in grayscale images)
+        magnitude_spectrum = np.log(1 + np.abs(frequency_data_shifted[0]))  # Using the first channel for visualization
+        magnitude_image = (magnitude_spectrum / magnitude_spectrum.max() * 255).astype(np.uint8)
+
+        # Flatten the magnitude image for grayscale and save it
+        magnitude_image = magnitude_image.flatten()
+
+        # Save the magnitude spectrum image for grayscale
+        magnitude_output_path = f"{output_base_path}_fourier.bmp"
+        save_image(magnitude_image, 'L', size, magnitude_output_path)
+        print(f"Magnitude spectrum saved to '{magnitude_output_path}'.")
+
+
 def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fast=True, frequency_data=None):
     """
     Apply Fourier Transform to an image, save magnitude spectrum,
@@ -94,42 +143,8 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
     if frequency_data is None:
         frequency_data = compute_frequency_data(input_pixels, size, mode, use_fast)
 
-    # Centering the zero-frequency component
-    frequency_data_shifted = [np.fft.fftshift(frequency) for frequency in frequency_data]
-
-    # Save the magnitude spectrum for visualization (separate for each channel)
-    if mode == 'RGB':
-        # Compute magnitude for each channel (R, G, B)
-        magnitude_spectrum_r = np.log(1 + np.abs(frequency_data_shifted[0]))  # Red channel
-        magnitude_spectrum_g = np.log(1 + np.abs(frequency_data_shifted[1]))  # Green channel
-        magnitude_spectrum_b = np.log(1 + np.abs(frequency_data_shifted[2]))  # Blue channel
-        
-        # Normalize and convert each channel to uint8
-        magnitude_r = (magnitude_spectrum_r / magnitude_spectrum_r.max() * 255).astype(np.uint8)
-        magnitude_g = (magnitude_spectrum_g / magnitude_spectrum_g.max() * 255).astype(np.uint8)
-        magnitude_b = (magnitude_spectrum_b / magnitude_spectrum_b.max() * 255).astype(np.uint8)
-        
-        # Stack the magnitude spectra of R, G, B channels into a single image
-        magnitude_image = np.stack([magnitude_r, magnitude_g, magnitude_b], axis=-1)
-
-        # Convert the magnitude image to a list of tuples for RGB format
-        magnitude_image = [tuple(pixel) for pixel in magnitude_image.reshape(-1, 3)]
-
-        magnitude_output_path = f"{output_base_path}_fourier_rgb.bmp"
-        save_image(magnitude_image, 'RGB', size, magnitude_output_path)
-        print(f"Magnitude spectrum for RGB saved to '{magnitude_output_path}'.")
-
-    else:
-        # For grayscale, just use the first channel (since there's only one channel in grayscale images)
-        magnitude_spectrum = np.log(1 + np.abs(frequency_data_shifted[0]))  # Using the first channel for visualization
-        magnitude_image = (magnitude_spectrum / magnitude_spectrum.max() * 255).astype(np.uint8)
-
-        # Flatten the magnitude image for grayscale and save it
-        magnitude_image = magnitude_image.flatten()
-
-        magnitude_output_path = f"{output_base_path}_fourier.bmp"
-        save_image(magnitude_image, 'L', size, magnitude_output_path)
-        print(f"Magnitude spectrum saved to '{magnitude_output_path}'.")
+    # Save the magnitude spectrum (separate function)
+    save_magnitude_spectrum(frequency_data, size, mode, output_base_path)
 
     # Apply Inverse Fourier Transform to each channel
     if use_fast:
