@@ -1,5 +1,5 @@
 import sys
-import numpy as np  # Add this line
+import numpy as np
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -27,7 +27,7 @@ args_dict = parse_arguments(commands)
 # Apply Fourier Transform and Inverse Fourier Transform
 if "fourier" in args_dict:
     print("Applying Fourier Transform and Inverse Fourier Transform...")
-    use_fast = args_dict.get("fast", True)  # Default to using fast Fourier transform
+    use_fast = str(args_dict.get("fast", "True")).lower() == "true"  # Default to using fast Fourier transform
     try:
         process_and_save_fourier(
             input_pixels=pixels,
