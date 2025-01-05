@@ -76,12 +76,15 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
         transformed_channels = [np.apply_along_axis(slow_dft, axis=1, arr=channel) for channel in channels]
         frequency_data = [np.apply_along_axis(slow_dft, axis=0, arr=transformed_channel) for transformed_channel in transformed_channels]
 
+    # Centering the zero-frequency component
+    frequency_data_shifted = [np.fft.fftshift(frequency) for frequency in frequency_data]
+
     # Save the magnitude spectrum for visualization (separate for each channel)
     if mode == 'RGB':
         # Compute magnitude for each channel (R, G, B)
-        magnitude_spectrum_r = np.log(1 + np.abs(frequency_data[0]))  # Red channel
-        magnitude_spectrum_g = np.log(1 + np.abs(frequency_data[1]))  # Green channel
-        magnitude_spectrum_b = np.log(1 + np.abs(frequency_data[2]))  # Blue channel
+        magnitude_spectrum_r = np.log(1 + np.abs(frequency_data_shifted[0]))  # Red channel
+        magnitude_spectrum_g = np.log(1 + np.abs(frequency_data_shifted[1]))  # Green channel
+        magnitude_spectrum_b = np.log(1 + np.abs(frequency_data_shifted[2]))  # Blue channel
         
         # Normalize and convert each channel to uint8
         magnitude_r = (magnitude_spectrum_r / magnitude_spectrum_r.max() * 255).astype(np.uint8)
@@ -100,7 +103,7 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
 
     else:
         # For grayscale, just use the first channel (since there's only one channel in grayscale images)
-        magnitude_spectrum = np.log(1 + np.abs(frequency_data[0]))  # Using the first channel for visualization
+        magnitude_spectrum = np.log(1 + np.abs(frequency_data_shifted[0]))  # Using the first channel for visualization
         magnitude_image = (magnitude_spectrum / magnitude_spectrum.max() * 255).astype(np.uint8)
 
         # Flatten the magnitude image for grayscale and save it
@@ -133,7 +136,6 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
     save_image(reconstructed_pixels, mode, size, reconstructed_output_path)
     print(f"Reconstructed image saved to '{reconstructed_output_path}'.")
 
-    
     
     
     # Unoptimised slow FT!!!
