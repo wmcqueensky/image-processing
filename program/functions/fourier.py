@@ -41,7 +41,7 @@ def fast_ifft(frequency_signal):
     factor = np.exp(2j * np.pi * np.arange(N) / N)
     return np.concatenate([even + factor[:N // 2] * odd, even - factor[:N // 2] * odd]) / 2
 
-def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fast=True):
+def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fast=True, frequency_data=None):
     """
     Apply Fourier Transform to an image, save magnitude spectrum,
     apply Inverse Fourier Transform, and save the reconstructed image.
@@ -53,7 +53,12 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
         mode: Image mode ('L' for grayscale, 'RGB' for color).
         output_base_path: Base path for saving output images (e.g., 'output').
         use_fast: Whether to use Fast Fourier Transform (FFT).
+        frequency_data: Precomputed frequency data (optional).
     """
+    # Compute frequency data if not provided
+    if frequency_data is None:
+        frequency_data = compute_frequency_data(input_pixels, size, mode, use_fast)
+
     width, height = size
     if mode == 'L':
         # For grayscale images, treat as a 2D array of intensities
@@ -136,6 +141,41 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
     save_image(reconstructed_pixels, mode, size, reconstructed_output_path)
     print(f"Reconstructed image saved to '{reconstructed_output_path}'.")
 
+
+def compute_frequency_data(input_pixels, size, mode, use_fast=True):
+    """
+    Compute the frequency data (Fourier Transform) for an image.
+
+    Args:
+        input_pixels: Flat list of pixel values from the image.
+        size: Tuple (width, height) of the image.
+        mode: Image mode ('L' for grayscale, 'RGB' for color).
+        use_fast: Whether to use Fast Fourier Transform (FFT).
+
+    Returns:
+        frequency_data: The computed frequency data.
+    """
+    width, height = size
+    if mode == 'L':
+        # For grayscale images, treat as a 2D array of intensities
+        pixel_array = np.array(input_pixels, dtype=float).reshape(height, width)
+        channels = [pixel_array]
+    elif mode == 'RGB':
+        # For color images, split into R, G, B channels
+        pixel_array = np.array(input_pixels, dtype=float).reshape(height, width, 3)
+        channels = [pixel_array[:, :, i] for i in range(3)]
+    else:
+        raise ValueError("Fourier transform is implemented for grayscale ('L') or color ('RGB') images only.")
+
+    # Apply Fourier Transform to each channel
+    if use_fast:
+        transformed_channels = [np.apply_along_axis(fast_fft, axis=1, arr=channel) for channel in channels]
+        frequency_data = [np.apply_along_axis(fast_fft, axis=0, arr=transformed_channel) for transformed_channel in transformed_channels]
+    else:
+        transformed_channels = [np.apply_along_axis(slow_dft, axis=1, arr=channel) for channel in channels]
+        frequency_data = [np.apply_along_axis(slow_dft, axis=0, arr=transformed_channel) for transformed_channel in transformed_channels]
+
+    return frequency_data
     
     
     # Unoptimised slow FT!!!
