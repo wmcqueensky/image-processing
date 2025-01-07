@@ -103,3 +103,89 @@ def process_and_save_filtered(frequency_data, size, mode, output_base_path, filt
     reconstructed_output_path = f"{output_base_path}_{filter_type}.bmp"
     save_image(reconstructed_pixels, mode, size, reconstructed_output_path)
     print(f"Reconstructed {filter_type} image saved to '{reconstructed_output_path}'.")
+
+
+
+
+
+#F3-F6
+
+def apply_band_pass_filter(frequency_data, f_low, f_high):
+    """
+    Apply a band-pass filter to the frequency data.
+    Allows frequencies between f_low and f_high.
+    """
+    filtered_frequency_data = []
+    for frequency in frequency_data:
+        height, width = frequency.shape
+        u = np.fft.fftfreq(width, 1.0 / width)
+        v = np.fft.fftfreq(height, 1.0 / height)
+        U, V = np.meshgrid(u, v)
+        distance = np.sqrt(U**2 + V**2)
+
+        mask = (distance >= f_low) & (distance <= f_high)
+        filtered_frequency = frequency * mask
+        filtered_frequency_data.append(filtered_frequency)
+    return filtered_frequency_data
+
+def apply_band_cut_filter(frequency_data, f_low, f_high):
+    """
+    Apply a band-cut (notch) filter to the frequency data.
+    Suppresses frequencies between f_low and f_high.
+    """
+    filtered_frequency_data = []
+    for frequency in frequency_data:
+        height, width = frequency.shape
+        u = np.fft.fftfreq(width, 1.0 / width)
+        v = np.fft.fftfreq(height, 1.0 / height)
+        U, V = np.meshgrid(u, v)
+        distance = np.sqrt(U**2 + V**2)
+
+        mask = (distance < f_low) | (distance > f_high)
+        filtered_frequency = frequency * mask
+        filtered_frequency_data.append(filtered_frequency)
+    return filtered_frequency_data
+
+
+def apply_directional_filter(frequency_data, angle_range):
+    """
+    Apply a directional filter to detect edges at specific orientations.
+
+    Args:
+        frequency_data: Frequency domain data for each channel.
+        angle_range: Tuple (theta_min, theta_max) in radians.
+    """
+    theta_min, theta_max = angle_range
+    filtered_frequency_data = []
+    for frequency in frequency_data:
+        height, width = frequency.shape
+        u = np.fft.fftfreq(width, 1.0 / width)
+        v = np.fft.fftfreq(height, 1.0 / height)
+        U, V = np.meshgrid(u, v)
+        angle = np.arctan2(V, U)
+
+        mask = (angle >= theta_min) & (angle <= theta_max)
+        filtered_frequency = frequency * mask
+        filtered_frequency_data.append(filtered_frequency)
+    return filtered_frequency_data
+
+
+def apply_phase_modification(frequency_data, phase_function):
+    """
+    Modify the phase spectrum of the frequency data.
+
+    Args:
+        frequency_data: List of frequency domain data for each channel.
+        phase_function: A function that takes the phase and returns the modified phase.
+    """
+    modified_frequency_data = []
+    for frequency in frequency_data:
+        magnitude = np.abs(frequency)
+        phase = np.angle(frequency)
+
+        # Apply the phase function
+        modified_phase = phase_function(phase)
+        modified_frequency = magnitude * np.exp(1j * modified_phase)
+
+        modified_frequency_data.append(modified_frequency)
+    return modified_frequency_data
