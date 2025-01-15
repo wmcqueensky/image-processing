@@ -1,13 +1,15 @@
 import sys
 import numpy as np
 
-from functions.low_high_pass_filter import apply_directional_filter, apply_phase_modification, apply_band_cut_filter, \
-    apply_band_pass_filter
+
+from functions.low_high_pass_filter import apply_phase_modifying_filter, \
+    apply_band_cut_filter, \
+    apply_band_pass_filter, apply_phase_modifying_filter, apply_high_pass_filter
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
 from functions.fourier import process_and_save_fourier, compute_frequency_data
-from functions.low_high_pass_filter import apply_low_pass_filter, apply_high_pass_filter, process_and_save_filtered
+from functions.low_high_pass_filter import apply_low_pass_filter, apply_directional_high_pass_filter, process_and_save_filtered
 
 # ==============================
 # TASK 4 SCRIPT
@@ -25,12 +27,18 @@ commands = sys.argv[3:]
 original_pixels, mode, size, im = load_image(input_image_path)
 pixels = original_pixels.copy()
 
+
 # Parse command-line arguments into a dictionary
 args_dict = parse_arguments(commands)
 
 # Precompute frequency data if needed
 use_fast = str(args_dict.get("fast", "True")).lower() == "true"
+
+print('mode', mode)
+if(mode=='RGBA'):
+    im = im.convert('RGB')
 frequency_data = compute_frequency_data(pixels, size, mode, use_fast)
+
 
 # Apply Fourier Transform and Inverse Fourier Transform
 if "fourier" in args_dict:
@@ -103,32 +111,46 @@ if "bandcut" in args_dict:
         filter_type='bandcut'
     )
 
-# Apply Directional Filter
-if "directional" in args_dict:
-    theta_min = float(args_dict.get("theta_min", 0))  # Default angle range start
-    theta_max = float(args_dict.get("theta_max", np.pi/4))  # Default angle range end
-    print(f"Applying Directional Filter with angle_range=({theta_min}, {theta_max})...")
-    filtered_frequency_data = apply_directional_filter(frequency_data, (theta_min, theta_max))
+if "directional_highpass" in args_dict:
+    cutoff_frequency = float(args_dict.get("cutoff", 30))  # Default cutoff frequency
+    theta_min = float(args_dict.get("theta_min", 0))  # Default minimum angle in radians
+    theta_max = float(args_dict.get("theta_max", np.pi / 2))  # Default maximum angle in radians
+    mask_path = args_dict.get("mask", None)  # Optional mask image path
+
+    print(f"Applying Directional High-Pass Filter with cutoff={cutoff_frequency}, "
+          f"theta_min={theta_min}, theta_max={theta_max}, mask={mask_path}...")
+
+
+    filtered_frequency_data = apply_directional_high_pass_filter(
+        frequency_data=frequency_data,
+        cutoff_frequency=cutoff_frequency,
+        angle_range=(theta_min, theta_max),
+        mask_image_path=mask_path
+    )
+
+
     process_and_save_filtered(
         frequency_data=filtered_frequency_data,
         size=size,
         mode=mode,
-        output_base_path=output_image_path.replace('.bmp', '_directional'),
-        filter_type='directional'
+        output_base_path=output_image_path.replace('.bmp', '_directional_highpass'),
+        filter_type='directional_highpass'
     )
 
-# Apply Phase Modification
-if "phase_mod" in args_dict:
-    def custom_phase_function(phase):
-        # Example: Add a constant shift of pi/4 to the phase
-        return phase + np.pi / 4
+# Apply Phase Modifying Filter (F6)
+if "phase_filter" in args_dict:
+    k = int(args_dict.get("k", 1))  # Default value of k
+    l = int(args_dict.get("l", 1))  # Default value of l
+    print(f"Applying Phase Modifying Filter with k={k}, l={l}...")
 
-    print("Applying Phase Modification...")
-    modified_frequency_data = apply_phase_modification(frequency_data, custom_phase_function)
+    # Apply the phase modifying filter
+    filtered_frequency_data = apply_phase_modifying_filter(frequency_data, k, l)
+
+    # Process and save the filtered result
     process_and_save_filtered(
-        frequency_data=modified_frequency_data,
+        frequency_data=filtered_frequency_data,
         size=size,
         mode=mode,
-        output_base_path=output_image_path.replace('.bmp', '_phase_mod'),
-        filter_type='phase_mod'
+        output_base_path=output_image_path.replace('.bmp', '_phase_modification'),
+        filter_type='phase_modification'
     )
