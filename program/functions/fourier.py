@@ -1,21 +1,23 @@
 import numpy as np
 from utils.file_operations import save_image
 
-# def slow_dft(signal):
-#     """Compute the Discrete Fourier Transform (DFT) using the direct definition."""
-#     N = len(signal)
-#     n = np.arange(N)
-#     k = n[:, None]  # Create a column vector for k
-#     exponential = np.exp(-2j * np.pi * k * n / N)  # Precompute the exponential terms
-#     return np.dot(exponential, signal)  # Use matrix multiplication to compute DFT
+def slow_dft(signal):
+    """Compute the Discrete Fourier Transform (DFT) using the direct definition."""
+    N = len(signal)
+    dft_result = np.zeros(N, dtype=complex)
+    for k in range(N):
+        for n in range(N):
+            dft_result[k] += signal[n] * np.exp(-2j * np.pi * k * n / N)
+    return dft_result
 
-# def slow_idft(frequency_signal):
-#     """Compute the Inverse Discrete Fourier Transform (IDFT) using the direct definition."""
-#     N = len(frequency_signal)
-#     n = np.arange(N)
-#     k = n[:, None]  # Create a column vector for k
-#     exponential = np.exp(2j * np.pi * k * n / N)  # Precompute the exponential terms
-#     return np.dot(exponential, frequency_signal) / N  # Use matrix multiplication to compute IDFT
+def slow_idft(frequency_signal):
+    """Compute the Inverse Discrete Fourier Transform (IDFT) using the direct definition."""
+    N = len(frequency_signal)
+    idft_result = np.zeros(N, dtype=complex)
+    for n in range(N):
+        for k in range(N):
+            idft_result[n] += frequency_signal[k] * np.exp(2j * np.pi * k * n / N)
+    return idft_result / N
 
 def fast_fft(signal):
     """Compute the Fast Fourier Transform (FFT) using decimation in spatial domain."""
@@ -169,22 +171,20 @@ def process_and_save_fourier(input_pixels, size, mode, output_base_path, use_fas
     save_image(reconstructed_pixels, mode, size, reconstructed_output_path)
     print(f"Reconstructed image saved to '{reconstructed_output_path}'.")
     
-    # Unoptimised slow FT!!!
-def slow_dft(signal):
-    """Compute the Discrete Fourier Transform (DFT) using the direct definition."""
-    N = len(signal)
-    dft_result = np.zeros(N, dtype=complex)
-    for k in range(N):
-        for n in range(N):
-            dft_result[k] += signal[n] * np.exp(-2j * np.pi * k * n / N)
-    return dft_result
+# Optimised slow FT(similar runtime to fast fourier)
 
-def slow_idft(frequency_signal):
-    """Compute the Inverse Discrete Fourier Transform (IDFT) using the direct definition."""
-    N = len(frequency_signal)
-    idft_result = np.zeros(N, dtype=complex)
-    for n in range(N):
-        for k in range(N):
-            idft_result[n] += frequency_signal[k] * np.exp(2j * np.pi * k * n / N)
-    return idft_result / N
+# def slow_dft(signal):
+#     """Compute the Discrete Fourier Transform (DFT) using the direct definition."""
+#     N = len(signal)
+#     n = np.arange(N)
+#     k = n[:, None]  # Create a column vector for k
+#     exponential = np.exp(-2j * np.pi * k * n / N)  # Precompute the exponential terms
+#     return np.dot(exponential, signal)  # Use matrix multiplication to compute DFT
 
+# def slow_idft(frequency_signal):
+#     """Compute the Inverse Discrete Fourier Transform (IDFT) using the direct definition."""
+#     N = len(frequency_signal)
+#     n = np.arange(N)
+#     k = n[:, None]  # Create a column vector for k
+#     exponential = np.exp(2j * np.pi * k * n / N)  # Precompute the exponential terms
+#     return np.dot(exponential, frequency_signal) / N  # Use matrix multiplication to compute IDFT
