@@ -8,6 +8,7 @@ from utils.file_operations import save_image
 from functions.fourier import save_magnitude_spectrum, fast_fft
 from functions.fourier import save_magnitude_spectrum, fast_fft, fast_ifft
 
+
 def apply_low_pass_filter(frequency_data, cutoff_frequency):
     """
     Apply a low-pass filter to the frequency data.
@@ -204,113 +205,78 @@ def apply_band_cut_filter(frequency_data, f_low, f_high):
     return filtered_frequency_data
 
 
-def apply_directional_high_pass_filter(frequency_data, cutoff_frequency, angle_range, mask_image_path=None):
+def apply_directional_high_pass_filter(frequency_data, cutoff_frequency, angle_ranges):
     """
-    Apply a directional high-pass filter with optional mask to frequency domain data.
+    Apply a directional high-pass filter to the frequency data.
+    It zeroes out frequencies within the specified angle ranges.
 
     Args:
         frequency_data: List of frequency domain data for each channel.
         cutoff_frequency: The cutoff frequency for the high-pass filter.
-        angle_range: Tuple (theta_min, theta_max) in radians.
-        mask_image_path: Optional path to a grayscale mask image to apply in the frequency domain.
+        angle_ranges: List of tuples with angle ranges (min_angle, max_angle), in degrees.
 
     Returns:
-        Filtered frequency domain data.
+        Filtered frequency data.
     """
-
-    theta_min, theta_max = angle_range
     filtered_frequency_data = []
-    print('theta min:', theta_min)
-    print('theta max:', theta_max)
-
-    # If a mask is provided, load and normalize it
-    mask = None
-    if mask_image_path:
-        try:
-            mask_image = Image.open(mask_image_path).convert('L')
-            mask = np.array(mask_image, dtype=float) / 255.0  # Normalize to [0, 1]
-        except Exception as e:
-            print(f"Error loading mask image: {e}")
-            return None
-    print('mask:', mask)
-    print("Mask min:", mask.min())
-    print("Mask max:", mask.max())
 
     for frequency in frequency_data:
-        # Get dimensions of frequency data
+        # Get the dimensions of the frequency data
         height, width = frequency.shape
 
-        print('height:', height)
-        print('width:', width)
-
-        # Create frequency grid
-        u = np.fft.fftfreq(width, 1.0 / width)
-        v = np.fft.fftfreq(height, 1.0 / height)
+        # Create the frequency grid
+        u = np.arange(width)
+        v = np.arange(height)
+        u[u > width // 2] -= width
+        v[v > height // 2] -= height
         U, V = np.meshgrid(u, v)
 
-        # Calculate distance and angle
-        distance = np.sqrt(U ** 2 + V ** 2)
-        angle = np.arctan2(V, U)
+        # Calculate the angle of each point in the frequency domain
+        angle = np.degrees(np.arctan2(V, U)) % 360  # Angle in degrees, range [0, 360)
 
-        # Create the high-pass filter mask (cutoff frequency)
-        high_pass_mask = distance >= cutoff_frequency
+        # Initialize a mask with ones (i.e., apply high-pass by default)
+        mask = np.ones((height, width), dtype=float)
 
-        # Create the directional filter mask
-        directional_mask = (angle >= theta_min) & (angle <= theta_max)
+        # Loop through each angular range and set the corresponding regions to 0 (low-pass)
+        for (theta_min, theta_max) in angle_ranges:
+            # Wrap the angles to ensure we handle both ascending and descending ranges
+            if theta_min > theta_max:
+                mask[(angle >= theta_min) | (angle <= theta_max)] = 0
+            else:
+                mask[(angle >= theta_min) & (angle <= theta_max)] = 0
 
-        # Combine masks
-        combined_mask = high_pass_mask & directional_mask
+        # Apply the high-pass filter: multiply frequency by the mask
+        filtered_frequency = frequency * mask
 
-        # If a user mask is provided, combine it
-        if mask is not None:
-            user_mask_resized = np.resize(mask, (height, width))  # Resize user mask to match frequency dimensions
-            combined_mask = combined_mask & (user_mask_resized > 0.5)  # Apply user mask (threshold > 0.5)
-
-        # Apply the combined mask to the frequency data
-        filtered_frequency = frequency * combined_mask
         filtered_frequency_data.append(filtered_frequency)
 
     return filtered_frequency_data
 
-#F5 start
 
+def generate_directional_mask(theta_ranges, height, width, output_mask_path="last_generated_mask.bmp"):
+    # Create a frequency grid manually
+    u = np.arange(width)
+    v = np.arange(height)
+    u[u > width // 2] -= width
+    v[v > height // 2] -= height
+    U, V = np.meshgrid(u, v)
 
-def apply_high_pass_edge_with_mask(input_image_path, mask_path, output_image_path):
-    print(f"Mask Path: {mask_path}")  # Debugging line to check the mask path
-    # Load mask
-    try:
-        mask_image = Image.open(mask_path).convert('L')
-    except Exception as e:
-        print(f"Error loading mask image: {e}")
-        sys.exit(1)
-    mask_kernel = np.array(mask_image, dtype=float)
+    # Calculate the angle of each point in the frequency domain
+    angle = np.arctan2(V, U)
 
-    # Normalize kernel (optional, depending on how the mask is designed)
-    mask_kernel /= np.sum(np.abs(mask_kernel)) if np.sum(np.abs(mask_kernel)) != 0 else 1
+    # Initialize a mask with zeros (black)
+    mask = np.zeros((height, width), dtype=float)
 
-    # High-pass filter kernel (Laplacian example)
-    high_pass_kernel = np.array([[0, -1, 0],
-                                 [-1, 4, -1],
-                                 [0, -1, 0]])
+    # Loop through each angular range and set the corresponding regions to 1 (white)
+    for (theta_min, theta_max) in theta_ranges:
+        mask[(angle >= np.radians(theta_min)) & (angle <= np.radians(theta_max))] = 1
 
-    # Load the input image
-    input_image = Image.open(input_image_path).convert('L')
-    input_array = np.array(input_image, dtype=float)
+    # Convert the mask to an image and save it
+    mask_image = Image.fromarray((mask * 255).astype(np.uint8))  # Convert mask to an 8-bit image (0 or 255)
+    mask_image.save(output_mask_path)
+    print(f"Mask saved to {output_mask_path}")
 
-    # Apply high-pass filter
-    high_pass_filtered = convolve(input_array, high_pass_kernel)
-
-    # Apply edge detection using the mask
-    edge_direction = convolve(high_pass_filtered, mask_kernel)
-
-    # Normalize for visualization
-    edge_direction_normalized = (edge_direction - edge_direction.min()) / (edge_direction.max() - edge_direction.min()) * 255
-    edge_direction_image = Image.fromarray(edge_direction_normalized.astype(np.uint8))
-
-    # Save or display the result
-    edge_direction_image.save(output_image_path)
-    print(f"Edge direction detection saved to '{output_image_path}'.")
-
+    return mask
 
 def apply_phase_modifying_filter(frequency_data, k, l):
     """

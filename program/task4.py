@@ -4,7 +4,7 @@ import numpy as np
 
 from functions.low_high_pass_filter import apply_phase_modifying_filter, \
     apply_band_cut_filter, \
-    apply_band_pass_filter, apply_phase_modifying_filter, apply_high_pass_filter
+    apply_band_pass_filter, apply_phase_modifying_filter, apply_high_pass_filter, generate_directional_mask
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -111,22 +111,37 @@ if "bandcut" in args_dict:
 
 if "directional_highpass" in args_dict:
     cutoff_frequency = float(args_dict.get("cutoff", 30))  # Default cutoff frequency
-    theta_min = float(args_dict.get("theta_min", 0))  # Default minimum angle in radians
-    theta_max = float(args_dict.get("theta_max", np.pi / 2))  # Default maximum angle in radians
-    mask_path = args_dict.get("mask", None)  # Optional mask image path
+    angle_ranges_str = args_dict.get("angles", "")  # e.g., "350:10 80:100"
+    angle_ranges = []
+
+    # Parse multiple angle ranges
+    if angle_ranges_str:
+        ranges = angle_ranges_str.split()
+        for range_str in ranges:
+            theta_min, theta_max = map(int, range_str.split(":"))
+            angle_ranges.append((theta_min, theta_max))
 
     print(f"Applying Directional High-Pass Filter with cutoff={cutoff_frequency}, "
-          f"theta_min={theta_min}, theta_max={theta_max}, mask={mask_path}...")
+          f"angle_ranges={angle_ranges}...")
 
-
+    # Apply the directional high-pass filter to the frequency data
     filtered_frequency_data = apply_directional_high_pass_filter(
         frequency_data=frequency_data,
         cutoff_frequency=cutoff_frequency,
-        angle_range=(theta_min, theta_max),
-        mask_image_path=mask_path
+        angle_ranges=angle_ranges  # Pass the parsed angle ranges
     )
 
+    # Generate and save the directional mask
+    print(f"Generating and saving the directional mask...")
+    mask_image_path = output_image_path.replace('.bmp', '_directional_mask.bmp')
+    generate_directional_mask(
+        theta_ranges=angle_ranges,
+        height=size[1],  # Assuming size[1] is height
+        width=size[0],   # Assuming size[0] is width
+        output_mask_path=mask_image_path  # Path to save the generated mask
+    )
 
+    # Save the filtered image after applying the directional high-pass filter
     process_and_save_filtered(
         frequency_data=filtered_frequency_data,
         size=size,
@@ -134,6 +149,7 @@ if "directional_highpass" in args_dict:
         output_base_path=output_image_path.replace('.bmp', '_directional_highpass'),
         filter_type='directional_highpass'
     )
+
 
 # Apply Phase Modifying Filter (F6)
 if "phase_filter" in args_dict:
