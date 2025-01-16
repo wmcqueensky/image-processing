@@ -137,8 +137,8 @@ if "directional_highpass" in args_dict:
 
 # Apply Phase Modifying Filter (F6)
 if "phase_filter" in args_dict:
-    k = int(args_dict.get("k", 1))  # Default value of k
-    l = int(args_dict.get("l", 1))  # Default value of l
+    k = int(args_dict.get("k", 0))  # Default value of k
+    l = int(args_dict.get("l", 100))  # Default value of l
     print(f"Applying Phase Modifying Filter with k={k}, l={l}...")
 
     # Apply the phase modifying filter
