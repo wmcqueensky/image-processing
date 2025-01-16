@@ -133,58 +133,74 @@ def apply_band_pass_filter(frequency_data, f_low, f_high):
     """
     Apply a band-pass filter to the frequency data.
     Allows frequencies between f_low and f_high.
+
+    Args:
+        frequency_data: List of frequency domain data for each channel.
+        f_low: Lower cut-off frequency.
+        f_high: Upper cut-off frequency.
+
+    Returns:
+        Filtered frequency data.
     """
     filtered_frequency_data = []
+
     for frequency in frequency_data:
+        # Get the dimensions of the frequency data
         height, width = frequency.shape
-        u = np.fft.fftfreq(width, 1.0 / width)
-        v = np.fft.fftfreq(height, 1.0 / height)
+
+        # Create a frequency grid manually
+        u = np.arange(width)
+        v = np.arange(height)
+        u[u > width // 2] -= width
+        v[v > height // 2] -= height
         U, V = np.meshgrid(u, v)
+
+        # Calculate the distance from the center of the frequency grid
         distance = np.sqrt(U**2 + V**2)
 
+        # Apply the band-pass filter
         mask = (distance >= f_low) & (distance <= f_high)
-        filtered_frequency = frequency * mask
+        filtered_frequency = frequency * mask  # Apply mask directly to frequency data
+
         filtered_frequency_data.append(filtered_frequency)
+
     return filtered_frequency_data
 
 def apply_band_cut_filter(frequency_data, f_low, f_high):
     """
     Apply a band-cut (notch) filter to the frequency data.
     Suppresses frequencies between f_low and f_high.
-    """
-    print('frequency data')
-    print(frequency_data)
-    filtered_frequency_data = []
-    for frequency in frequency_data:
-        height, width = frequency.shape
-        print('height:')
-        print(height)
-        print('width:')
-        print(width)
-        # u = fast_fft(np.arange(width) / width)
-        u = np.fft.fftfreq(width, 1.0 / width)
-        print('u:')
-        print(u)
-        # v = fast_fft(np.arange(height) / height)
-        v = np.fft.fftfreq(height, 1.0 / height)
-        print('v:')
-        print(v)
-        U, V = np.meshgrid(u, v)
-        print('U:')
-        print(U)
-        print('V:')
-        print(V)
-        distance = np.sqrt(U**2 + V**2)
-        print('Distance:')
-        print(distance)
 
+    Args:
+        frequency_data: List of frequency domain data for each channel.
+        f_low: Lower frequency cutoff.
+        f_high: Higher frequency cutoff.
+
+    Returns:
+        Filtered frequency data.
+    """
+    filtered_frequency_data = []
+
+    for frequency in frequency_data:
+        # Get the dimensions of the frequency data
+        height, width = frequency.shape
+
+        # Create a frequency grid manually
+        u = np.arange(width)
+        v = np.arange(height)
+        u[u > width // 2] -= width
+        v[v > height // 2] -= height
+        U, V = np.meshgrid(u, v)
+
+        # Calculate the distance from the center of the frequency grid
+        distance = np.sqrt(U**2 + V**2)
+
+        # Apply the band-cut filter
         mask = (distance < f_low) | (distance > f_high)
-        print('mask:')
-        print(mask)
-        filtered_frequency = frequency * mask
-        print('filtered frequency:')
-        print(filtered_frequency)
+        filtered_frequency = frequency * mask  # Apply mask directly to frequency data
+
         filtered_frequency_data.append(filtered_frequency)
+
     return filtered_frequency_data
 
 
@@ -297,28 +313,41 @@ def apply_high_pass_edge_with_mask(input_image_path, mask_path, output_image_pat
 
 
 def apply_phase_modifying_filter(frequency_data, k, l):
+    """
+    Apply a phase modification filter to the frequency data.
+    
+    Args:
+        frequency_data: List of frequency domain data for each channel.
+        k: Horizontal shift parameter.
+        l: Vertical shift parameter.
+    
+    Returns:
+        Modified frequency data.
+    """
     modified_frequency_data = []
-
+    
     for frequency in frequency_data:
-
         # Calculate the magnitude and phase
         magnitude = np.abs(frequency)
         phase = np.angle(frequency)
-
+        
         # Get the dimensions of the frequency data
         height, width = frequency.shape
-        u = np.fft.fftfreq(width, 1.0 / width)
-        v = np.fft.fftfreq(height, 1.0 / height)
+        
+        # Create a frequency grid manually
+        u = np.arange(width)
+        v = np.arange(height)
+        u[u > width // 2] -= width
+        v[v > height // 2] -= height
         U, V = np.meshgrid(u, v)
-
-
-        # Calculate the phase modification mask based on the provided formula
+        
+        # Calculate the phase modification mask using the manual frequency grid
         phase_mask = np.exp(1j * (-k * 2 * np.pi * U / width - l * 2 * np.pi * V / height + (k + l) * np.pi))
-
-        # Apply the phase modification to the frequency data
+        
+        # Apply the phase modification
         modified_phase = np.angle(phase_mask)
         modified_frequency = magnitude * np.exp(1j * (phase + modified_phase))
-
+        
         modified_frequency_data.append(modified_frequency)
-
+    
     return modified_frequency_data
