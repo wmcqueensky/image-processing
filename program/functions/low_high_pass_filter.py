@@ -208,7 +208,7 @@ def apply_band_cut_filter(frequency_data, f_low, f_high):
 def apply_directional_high_pass_filter(frequency_data, cutoff_frequency, angle_ranges):
     """
     Apply a directional high-pass filter to the frequency data.
-    It zeroes out frequencies within the specified angle ranges.
+    It zeroes out frequencies within the specified angle ranges and their 180-degree symmetric ranges.
 
     Args:
         frequency_data: List of frequency domain data for each channel.
@@ -239,11 +239,21 @@ def apply_directional_high_pass_filter(frequency_data, cutoff_frequency, angle_r
 
         # Loop through each angular range and set the corresponding regions to 0 (low-pass)
         for (theta_min, theta_max) in angle_ranges:
-            # Wrap the angles to ensure we handle both ascending and descending ranges
+            # Apply the mask for the original angular range
             if theta_min > theta_max:
                 mask[(angle >= theta_min) | (angle <= theta_max)] = 0
             else:
                 mask[(angle >= theta_min) & (angle <= theta_max)] = 0
+
+            # Calculate the 180-degree rotated range
+            rotated_min = (theta_min + 180) % 360
+            rotated_max = (theta_max + 180) % 360
+
+            # Apply the mask for the rotated range
+            if rotated_min > rotated_max:
+                mask[(angle >= rotated_min) | (angle <= rotated_max)] = 0
+            else:
+                mask[(angle >= rotated_min) & (angle <= rotated_max)] = 0
 
         # Apply the high-pass filter: multiply frequency by the mask
         filtered_frequency = frequency * mask
@@ -254,6 +264,18 @@ def apply_directional_high_pass_filter(frequency_data, cutoff_frequency, angle_r
 
 
 def generate_directional_mask(theta_ranges, height, width, output_mask_path="last_generated_mask.bmp"):
+    """
+    Generates a directional mask for each angular range, including 180-degree symmetry for each interval.
+
+    Args:
+        theta_ranges: List of angular ranges (min_angle, max_angle) in degrees.
+        height: Height of the image.
+        width: Width of the image.
+        output_mask_path: Path to save the generated mask image.
+
+    Returns:
+        The generated directional mask as a 2D numpy array.
+    """
     # Create a frequency grid manually
     u = np.arange(width)
     v = np.arange(height)
@@ -262,21 +284,36 @@ def generate_directional_mask(theta_ranges, height, width, output_mask_path="las
     U, V = np.meshgrid(u, v)
 
     # Calculate the angle of each point in the frequency domain
-    angle = np.arctan2(V, U)
+    angle = np.degrees(np.arctan2(V, U)) % 360  # Angle in degrees, range [0, 360)
 
     # Initialize a mask with zeros (black)
     mask = np.zeros((height, width), dtype=float)
 
-    # Loop through each angular range and set the corresponding regions to 1 (white)
+    # Loop through each angular range and apply symmetry for all intervals
     for (theta_min, theta_max) in theta_ranges:
-        mask[(angle >= np.radians(theta_min)) & (angle <= np.radians(theta_max))] = 1
+        # Apply the mask for the original angular range
+        if theta_min > theta_max:
+            mask[(angle >= theta_min) | (angle <= theta_max)] = 1
+        else:
+            mask[(angle >= theta_min) & (angle <= theta_max)] = 1
 
-    # Convert the mask to an image and save it
-    mask_image = Image.fromarray((mask * 255).astype(np.uint8))  # Convert mask to an 8-bit image (0 or 255)
+        # Calculate the 180-degree rotated range
+        rotated_min = (theta_min + 180) % 360
+        rotated_max = (theta_max + 180) % 360
+
+        # Apply the mask for the rotated range
+        if rotated_min > rotated_max:
+            mask[(angle >= rotated_min) | (angle <= rotated_max)] = 1
+        else:
+            mask[(angle >= rotated_min) & (angle <= rotated_max)] = 1
+
+    # Convert the mask to a grayscale image and save it
+    mask_image = Image.fromarray((mask * 255).astype(np.uint8), mode="L")  # Ensure grayscale
     mask_image.save(output_mask_path)
     print(f"Mask saved to {output_mask_path}")
 
     return mask
+
 
 def apply_phase_modifying_filter(frequency_data, k, l):
     """
