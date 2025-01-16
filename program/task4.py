@@ -4,7 +4,7 @@ import numpy as np
 
 from functions.low_high_pass_filter import apply_phase_modifying_filter, \
     apply_band_cut_filter, \
-    apply_band_pass_filter, apply_phase_modifying_filter, apply_high_pass_filter, generate_directional_mask
+    apply_band_pass_filter, apply_phase_modifying_filter, apply_high_pass_filter
 from utils.file_operations import load_image, save_image
 from utils.help import print_help
 from utils.parse_arguments import parse_arguments
@@ -131,15 +131,6 @@ if "directional_highpass" in args_dict:
         angle_ranges=angle_ranges  # Pass the parsed angle ranges
     )
 
-    # Generate and save the directional mask
-    print(f"Generating and saving the directional mask...")
-    mask_image_path = output_image_path.replace('.bmp', '_directional_mask.bmp')
-    generate_directional_mask(
-        theta_ranges=angle_ranges,
-        height=size[1],  # Assuming size[1] is height
-        width=size[0],   # Assuming size[0] is width
-        output_mask_path=mask_image_path  # Path to save the generated mask
-    )
 
     # Save the filtered image after applying the directional high-pass filter
     process_and_save_filtered(
