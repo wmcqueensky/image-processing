@@ -34,9 +34,7 @@ args_dict = parse_arguments(commands)
 # Precompute frequency data if needed
 use_fast = str(args_dict.get("fast", "True")).lower() == "true"
 
-print('mode', mode)
-if(mode=='RGBA'):
-    im = im.convert('RGB')
+
 frequency_data = compute_frequency_data(pixels, size, mode, use_fast)
 
 
